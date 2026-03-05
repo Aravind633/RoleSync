@@ -5,39 +5,35 @@ const userSchema = new mongoose.Schema(
   {
     email: {
       type: String,
-      required: [true, 'Email is required'],
+      required: [true, 'Please provide your email'],
       unique: true,
       lowercase: true,
-      trim: true,
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: [true, 'Please provide a password'],
       minlength: 8,
-      select: false, 
+      select: false, // This ensures the password isn't leaked in API responses
     },
     role: {
       type: String,
       enum: ['candidate', 'recruiter', 'admin'],
       default: 'candidate',
     },
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
-    },
-    refreshToken: String, // For JWT rotation
+    refreshToken: String,
   },
   { timestamps: true }
 );
 
-// Pre-save hook to hash password before saving to DB
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+userSchema.pre('save', async function () {
+  // Only run this function if password was actually modified
+  if (!this.isModified('password')) return;
+
+  // Hash the password with cost of 12
   this.password = await bcrypt.hash(this.password, 12);
-  next();
 });
 
-// Instance method to check password validity
+// Instance method to verify passwords during login
 userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
