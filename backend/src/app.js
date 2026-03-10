@@ -6,8 +6,8 @@ import cookieParser from 'cookie-parser';
 import { logger } from './core/logger/index.js';
 import { globalErrorHandler } from './core/middlewares/error.middleware.js';
 import { AppError } from './core/errors/AppError.js';
-
-import authRoutes from './modules/auth/auth.routes.js'; 
+import authRoutes from './modules/auth/auth.routes.js';
+import jobRoutes from './modules/jobs/job.routes.js';
 
 const app = express();
 
@@ -23,6 +23,7 @@ app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
 // Mount Routes
 app.use('/api/v1/auth', authRoutes); 
+app.use('/api/v1/jobs', jobRoutes); 
 
 app.all('/{*splat}', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
