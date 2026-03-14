@@ -4,7 +4,8 @@ import {
   getAllJobs, 
   getMyJobs, 
   updateJob, 
-  deleteJob 
+  deleteJob,
+  bulkUploadJobs
 } from './job.controller.js';
 import { protect, restrictTo } from '../../core/middlewares/auth.middleware.js';
 
@@ -18,6 +19,7 @@ router.use(protect);
 router.use(restrictTo('recruiter'));
 
 router.post('/', createJob);
+router.post('/bulk', bulkUploadJobs);
 router.get('/my-jobs', getMyJobs);
 router.patch('/:id', updateJob);
 router.delete('/:id', deleteJob);

@@ -121,3 +121,38 @@ export const deleteJob = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc    Bulk upload multiple job postings
+ * @route   POST /api/v1/jobs/bulk
+ * @access  Private (Recruiter only)
+ */
+export const bulkUploadJobs = async (req, res, next) => {
+  try {
+    const jobsArray = req.body;
+
+    // 1. Validate that the request body is an actual array
+    if (!Array.isArray(jobsArray) || jobsArray.length === 0) {
+      return next(new AppError('Please provide an array of job objects.', 400));
+    }
+
+    // 2. Map through the array and attach the logged-in recruiter's ID to EVERY job
+    const jobsWithRecruiter = jobsArray.map(job => ({
+      ...job,
+      recruiter: req.user._id
+    }));
+
+    // 3. Insert all jobs into MongoDB in one massive batch
+   
+    const jobs = await Job.insertMany(jobsWithRecruiter, { ordered: false });
+
+    res.status(201).json({
+      status: 'success',
+      results: jobs.length,
+      message: `Successfully uploaded ${jobs.length} jobs.`,
+      data: { jobs }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
