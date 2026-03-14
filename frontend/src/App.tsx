@@ -1,11 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from './core/components/ProtectedRoute';
 import { Layout } from './core/components/Layout';
 import { Register } from './pages/Auth/Register';
 import { Login } from './pages/Auth/Login';
 
-
-// Temporary Placeholder Components
+import { CandidateDashboard } from './pages/Candidate/CandidateDashboard';
+import { RecruiterDashboard } from './pages/Recruiter/RecruiterDashboard';
 
 const Home = () => (
   <div className="flex flex-col items-center justify-center h-[80vh]">
@@ -14,16 +14,17 @@ const Home = () => (
   </div>
 );
 
-const Unauthorized = () => <div className="p-8"><h1 className="text-2xl font-bold text-red-600">403 - Unauthorized! Wrong Role.</h1></div>;
-const CandidateDashboard = () => <div className="p-8"><h1 className="text-2xl font-bold text-blue-600">🎓 Candidate Dashboard</h1></div>;
-const RecruiterDashboard = () => <div className="p-8"><h1 className="text-2xl font-bold text-purple-600">🏢 Recruiter Dashboard</h1></div>;
-//  Main App Routing
-
+const Unauthorized = () => (
+  <div className="p-8 text-center mt-20">
+    <h1 className="text-3xl font-bold text-red-600">403 - Unauthorized</h1>
+    <p className="text-gray-600 mt-2">You do not have the correct role to view this page.</p>
+  </div>
+);
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Everything inside here gets the Navbar */}
+      
         <Route element={<Layout />}>
           
           {/* Public Routes */}
@@ -31,13 +32,9 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
-
-          {/* Candidate Protected Routes */}
           <Route element={<ProtectedRoute allowedRoles={['candidate']} />}>
             <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
           </Route>
-
-          {/* Recruiter Protected Routes */}
           <Route element={<ProtectedRoute allowedRoles={['recruiter']} />}>
             <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
           </Route>
