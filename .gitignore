@@ -15,6 +15,7 @@ dist-ssr/
 # Optional: backend build directories if you compile down later
 build/
 out/
+uploads/
 
 # Logs
 logs
