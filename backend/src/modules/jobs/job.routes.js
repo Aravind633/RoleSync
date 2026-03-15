@@ -1,27 +1,18 @@
 import express from 'express';
-import { 
-  createJob, 
-  getAllJobs, 
-  getMyJobs, 
-  updateJob, 
-  deleteJob,
-  bulkUploadJobs
-} from './job.controller.js';
+import { createJob, getAllJobs, getMyJobs, updateJob, deleteJob, bulkUploadJobs, searchJobs } from './job.controller.js';
 import { protect, restrictTo } from '../../core/middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-// Publicly accessible 
-router.get('/', protect, getAllJobs);
+router.get('/search', searchJobs);
+router.route('/')
+  .get(getAllJobs)
+  .post(protect, restrictTo('recruiter'), createJob);
+router.post('/bulk', protect, restrictTo('recruiter'), bulkUploadJobs);
+router.get('/my-jobs', protect, restrictTo('recruiter'), getMyJobs);
 
-
-router.use(protect);
-router.use(restrictTo('recruiter'));
-
-router.post('/', createJob);
-router.post('/bulk', bulkUploadJobs);
-router.get('/my-jobs', getMyJobs);
-router.patch('/:id', updateJob);
-router.delete('/:id', deleteJob);
+router.route('/:id')
+  .patch(protect, restrictTo('recruiter'), updateJob)
+  .delete(protect, restrictTo('recruiter'), deleteJob);
 
 export default router;
