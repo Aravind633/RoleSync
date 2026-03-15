@@ -96,3 +96,16 @@ export const logout = async (req, res) => {
   });
   res.status(200).json({ status: 'success' });
 };
+export const getMe = async (req, res, next) => {
+  try {
+    // The 'protect' middleware already verified the token and attached the user to req.user
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: req.user
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
