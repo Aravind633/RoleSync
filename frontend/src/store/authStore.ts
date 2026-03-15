@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api } from '../config/api'; // 👈 Don't forget to import your api!
+import { api } from '../config/api'; 
 
 interface User {
   _id: string;
@@ -28,23 +28,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   setToken: (token) => set({ accessToken: token }),
   logout: () => set({ user: null, accessToken: null, isAuthenticated: false }),
   
-  // 👇 THE MISSING FUNCTION 👇
+  
   checkAuth: async () => {
     try {
-      // Ping the backend to see if our HttpOnly cookie is still valid
+      
       const response = await api.get('/auth/me');
       set({ 
         user: response.data.data.user, 
         isAuthenticated: true, 
-        isCheckingAuth: false // Stop the loading spinner!
+        isCheckingAuth: false 
       });
     } catch (error) {
-      // If the ping fails (e.g., 401 Unauthorized), ensure the user is logged out
+      // If the ping fails 
       set({ 
         user: null, 
         accessToken: null, 
         isAuthenticated: false, 
-        isCheckingAuth: false // Stop the loading spinner!
+        isCheckingAuth: false 
       });
     }
   }

@@ -3,7 +3,7 @@ import { env } from './config/env.js';
 import { logger } from './core/logger/index.js';
 import { connectDB } from './config/database.js';
 import { connectRedis, redisClient } from './config/redis.js';
-
+import './modules/matching/match.queue.js';
 // Handle Uncaught Exceptions (Synchronous)
 process.on('uncaughtException', (err) => {
   logger.fatal('UNCAUGHT EXCEPTION! Shutting down...', err);

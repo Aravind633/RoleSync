@@ -4,10 +4,10 @@ import { CreateJobModal } from './CreateJobModal';
 import { BulkUploadModal } from './BulkUploadModal';
 
 export const RecruiterDashboard = () => {
-  // 1. Safely destructure the hook with a fallback empty object {}
+
   const { getMyJobs } = useJobs() || {};
   
-  // 2. Safely read the data with optional chaining
+  
   const jobs = getMyJobs?.data || [];
   const isLoading = getMyJobs?.isLoading || false;
   const isError = getMyJobs?.isError || false;

@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useProfile } from '../../hooks/useProfile';
 
 export const CandidateDashboard = () => {
-  // 1. We add fallback empty objects {} just in case useProfile() returns undefined
+  //   add fallback empty objects {} just in case useProfile() returns undefined
   const { getProfile, updateProfile } = useProfile() || {};
   
-  // 2. We safely read the data using optional chaining (?.)
+  //  safely read the data using optional chaining (?.)
   const profile = getProfile?.data;
   const isLoading = getProfile?.isLoading || false;
 
