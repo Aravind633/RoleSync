@@ -9,7 +9,7 @@ import { AppError } from './core/errors/AppError.js';
 import authRoutes from './modules/auth/auth.routes.js';
 import jobRoutes from './modules/jobs/job.routes.js';
 import profileRoutes from './modules/users/profile.routes.js';
-
+import applicationRoutes from './modules/applications/application.routes.js';
 const app = express();
 
 app.use(helmet());
@@ -28,6 +28,7 @@ app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 app.use('/api/v1/auth', authRoutes); 
 app.use('/api/v1/jobs', jobRoutes); 
 app.use('/api/v1/profiles', profileRoutes);
+app.use('/api/v1/applications', applicationRoutes);
 
 app.all('/{*splat}', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
