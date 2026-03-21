@@ -10,6 +10,8 @@ import authRoutes from './modules/auth/auth.routes.js';
 import jobRoutes from './modules/jobs/job.routes.js';
 import profileRoutes from './modules/users/profile.routes.js';
 import applicationRoutes from './modules/applications/application.routes.js';
+import matchRoutes from './modules/matching/match.routes.js';
+
 const app = express();
 
 app.use(helmet());

@@ -1,118 +1,88 @@
-import { useState, useEffect } from 'react';
-import { useProfile } from '../../hooks/useProfile';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import api from '../../utils/api';
 
 export const CandidateDashboard = () => {
-  //   add fallback empty objects {} just in case useProfile() returns undefined
-  const { getProfile, updateProfile } = useProfile() || {};
-  
-  //  safely read the data using optional chaining (?.)
-  const profile = getProfile?.data;
-  const isLoading = getProfile?.isLoading || false;
-
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    skills: '',
-    experienceYears: 0,
-    location: '',
+  // Fetch AI recommendations (Served instantly from Redis!)
+  const { data: recommendations, isLoading, isError } = useQuery({
+    queryKey: ['aiRecommendations'],
+    queryFn: async () => {
+      const { data } = await api.get('/matches/recommendations');
+      return data.data; // This returns the array of Match objects
+    },
   });
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-
-  useEffect(() => {
-    if (profile) {
-      setFormData({
-        firstName: profile.firstName || '',
-        lastName: profile.lastName || '',
-        skills: profile.skills ? profile.skills.join(', ') : '',
-        experienceYears: profile.experienceYears || 0,
-        location: profile.location || '',
-      });
-    }
-  }, [profile]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setResumeFile(e.target.files[0]);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const submitData = new FormData();
-    submitData.append('firstName', formData.firstName);
-    submitData.append('lastName', formData.lastName);
-    submitData.append('skills', formData.skills);
-    submitData.append('experienceYears', formData.experienceYears.toString());
-    submitData.append('location', formData.location);
-    
-    if (resumeFile) {
-      submitData.append('resume', resumeFile);
-    }
-
-    // Safely call the mutation
-    updateProfile?.mutate(submitData);
-  };
-
-  if (isLoading) return <div className="p-8 text-center text-gray-500">Loading profile...</div>;
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">🎓 Candidate Profile</h1>
-        
-        {updateProfile?.isSuccess && (
-          <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-md text-sm font-medium">
-            Profile updated successfully!
+    <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div className="mb-10 flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-extrabold text-gray-900">Candidate Dashboard</h1>
+          <p className="mt-2 text-gray-600">Welcome back! Here are your personalized job matches.</p>
+        </div>
+        <Link 
+          to="/candidate/jobs" 
+          className="bg-gray-100 text-gray-800 px-6 py-2 rounded-md font-semibold hover:bg-gray-200 transition-colors border border-gray-300"
+        >
+          Browse All Jobs
+        </Link>
+      </div>
+
+      {/* AI Recommendations Section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+          <span>✨</span> Top AI Recommended Roles
+        </h2>
+
+        {isLoading ? (
+          <div className="text-center py-10 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <span className="text-gray-500 font-medium animate-pulse">Running matching algorithms...</span>
+          </div>
+        ) : isError ? (
+          <div className="text-center py-10 bg-white rounded-xl border border-red-200 shadow-sm">
+            <span className="text-red-500 font-medium">Unable to load recommendations at this time.</span>
+          </div>
+        ) : recommendations?.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <p className="text-gray-500 text-lg mb-4">We are currently calculating your perfect matches.</p>
+            <p className="text-sm text-gray-400">Make sure your profile skills and experience are fully updated!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recommendations?.map((match: any) => (
+              <div key={match._id} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-all relative overflow-hidden flex flex-col h-full">
+                
+                {/* Match Score Badge */}
+                <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 rounded-bl-lg font-bold text-sm shadow-sm">
+                  {match.score}% Match
+                </div>
+
+                <div className="mb-4 pr-12">
+                  <h3 className="text-xl font-bold text-gray-900 truncate">{match.job?.title}</h3>
+                  <p className="text-blue-600 font-medium">{match.job?.companyName}</p>
+                </div>
+                
+                <div className="space-y-2 mb-6 flex-grow text-sm text-gray-600">
+                  <p className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-800">📍</span> {match.job?.location || 'Not specified'}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-800">💼</span> {match.job?.experienceLevel || 'Any'} Experience
+                  </p>
+                </div>
+
+                <div className="mt-auto border-t pt-4">
+                  <Link
+                    to="/candidate/jobs" // Sends them to the search page where they can apply
+                    className="block w-full text-center py-2 px-4 bg-blue-50 text-blue-700 rounded-md font-semibold text-sm hover:bg-blue-100 transition-colors"
+                  >
+                    View Details & Apply
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
         )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">First Name</label>
-              <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Last Name</label>
-              <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Location</label>
-            <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., Hyderabad, India" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Years of Experience</label>
-              <input type="number" name="experienceYears" value={formData.experienceYears} onChange={handleChange} min="0" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Skills (Comma separated)</label>
-              <input type="text" name="skills" value={formData.skills} onChange={handleChange} placeholder="React, Node.js, MongoDB" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Resume Upload (PDF/DOCX)</label>
-            <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-            {profile?.resumeUrl && (
-              <p className="mt-2 text-sm text-green-600 font-medium">✓ Resume currently on file</p>
-            )}
-          </div>
-
-          <div className="pt-4">
-            <button type="submit" disabled={updateProfile?.isPending} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
-              {updateProfile?.isPending ? 'Saving...' : 'Save Profile'}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );
