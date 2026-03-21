@@ -4,11 +4,11 @@ import { ProtectedRoute } from './core/components/ProtectedRoute';
 import { Layout } from './core/components/Layout';
 import { Register } from './pages/Auth/Register';
 import { Login } from './pages/Auth/Login';
-
+import { JobSearch } from './pages/Candidate/JobSearch';
 import { CandidateDashboard } from './pages/Candidate/CandidateDashboard';
 import { RecruiterDashboard } from './pages/Recruiter/RecruiterDashboard';
 import { useAuthStore } from './store/authStore';
-
+import { ManageApplicants } from './pages/Recruiter/ManageApplicants';
 const Home = () => (
   <div className="flex flex-col items-center justify-center h-[80vh]">
     <h1 className="text-5xl font-extrabold mb-6 text-gray-900">Welcome to RoleSync</h1>
@@ -54,11 +54,13 @@ function App() {
           {/* Candidate Routes */}
           <Route element={<ProtectedRoute allowedRoles={['candidate']} />}>
             <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
+            <Route path="/candidate/jobs" element={<JobSearch />} />
           </Route>
           
           {/* Recruiter Routes */}
           <Route element={<ProtectedRoute allowedRoles={['recruiter']} />}>
             <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+            <Route path="/recruiter/jobs/:jobId/applicants" element={<ManageApplicants />} />
           </Route>
 
         </Route>

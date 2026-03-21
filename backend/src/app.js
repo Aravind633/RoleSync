@@ -29,6 +29,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/jobs', jobRoutes); 
 app.use('/api/v1/profiles', profileRoutes);
 app.use('/api/v1/applications', applicationRoutes);
+app.use('/api/v1/matches', matchRoutes)
 
 app.all('/{*splat}', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

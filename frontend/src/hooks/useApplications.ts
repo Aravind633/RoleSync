@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import api from '../core/utils/api'; 
+import api from '../utils/api'; 
 
 export const useApplications = () => {
   const queryClient = useQueryClient();
