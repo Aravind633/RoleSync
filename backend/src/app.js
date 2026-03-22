@@ -11,7 +11,8 @@ import jobRoutes from './modules/jobs/job.routes.js';
 import profileRoutes from './modules/users/profile.routes.js';
 import applicationRoutes from './modules/applications/application.routes.js';
 import matchRoutes from './modules/matching/match.routes.js';
-
+import notificationRoutes from './modules/notification/notification.routes.js';
+import adminRoutes from './modules/admin/admin.routes.js';
 const app = express();
 
 app.use(helmet());
@@ -32,6 +33,8 @@ app.use('/api/v1/jobs', jobRoutes);
 app.use('/api/v1/profiles', profileRoutes);
 app.use('/api/v1/applications', applicationRoutes);
 app.use('/api/v1/matches', matchRoutes)
+app.use('/api/v1/admin', adminRoutes)
+app.use('/api/v1/notifications', notificationRoutes);
 
 app.all('/{*splat}', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

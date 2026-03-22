@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
+import { useApplications } from '../../hooks/useApplications';
 
 export const CandidateDashboard = () => {
   // Fetch AI recommendations (Served instantly from Redis!)
@@ -11,6 +12,10 @@ export const CandidateDashboard = () => {
       return data.data; // This returns the array of Match objects
     },
   });
+
+  // Fetch the candidate's active applications
+  const { getMyApplications } = useApplications();
+  const { data: myApplications, isLoading: appsLoading } = getMyApplications;
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
@@ -73,7 +78,7 @@ export const CandidateDashboard = () => {
 
                 <div className="mt-auto border-t pt-4">
                   <Link
-                    to="/candidate/jobs" // Sends them to the search page where they can apply
+                    to="/candidate/jobs" 
                     className="block w-full text-center py-2 px-4 bg-blue-50 text-blue-700 rounded-md font-semibold text-sm hover:bg-blue-100 transition-colors"
                   >
                     View Details & Apply
@@ -81,6 +86,54 @@ export const CandidateDashboard = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Active Applications Section */}
+      <div className="mt-12 border-t border-gray-200 pt-10">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+          <span>📋</span> My Active Applications
+        </h2>
+
+        {appsLoading ? (
+          <div className="text-gray-500">Loading your applications...</div>
+        ) : myApplications?.length === 0 ? (
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center text-gray-500">
+            You haven't applied to any jobs yet. <Link to="/candidate/jobs" className="text-blue-600 hover:underline">Start browsing!</Link>
+          </div>
+        ) : (
+          <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Job Title</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied On</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {myApplications?.map((app: any) => (
+                  <tr key={app._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{app.job?.title}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">{app.job?.companyName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                      {new Date(app.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        ${app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                          app.status === 'reviewed' ? 'bg-blue-100 text-blue-800' :
+                          app.status === 'shortlisted' ? 'bg-green-100 text-green-800' : 
+                          'bg-red-100 text-red-800'}`}>
+                        {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

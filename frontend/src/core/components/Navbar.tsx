@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { api } from '../../config/api';
+import { NotificationBell } from './common/NotificationBell';
 
 export const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -33,18 +34,21 @@ export const Navbar = () => {
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
-                <span className="text-sm text-gray-600 font-medium px-3 py-1 bg-gray-100 rounded-full">
-                  {user?.role === 'candidate' ? '🎓 Candidate' : '🏢 Recruiter'}
-                </span>
-                
                 {/* Dynamic Dashboard Link */}
                 <Link 
                   to={user?.role === 'candidate' ? '/candidate/dashboard' : '/recruiter/dashboard'}
-                  className="text-gray-700 hover:text-blue-600 font-medium text-sm"
+                  className="text-gray-700 hover:text-blue-600 font-medium text-sm mr-2"
                 >
                   Dashboard
                 </Link>
 
+                <NotificationBell />
+
+                {/* User Role Badge */}
+                <span className="text-sm text-gray-600 font-medium px-3 py-1 bg-gray-100 rounded-full ml-2">
+                  {user?.role === 'candidate' ? '🎓 Candidate' : '🏢 Recruiter'}
+                </span>
+                
                 <button
                   onClick={handleLogout}
                   className="ml-4 text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
