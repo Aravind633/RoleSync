@@ -31,13 +31,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   
   checkAuth: async () => {
     try {
+      const response = await api.get(`/auth/me?t=${new Date().getTime()}`);
+      const user = response.data.data?.user;
       
-      const response = await api.get('/auth/me');
-      set({ 
-        user: response.data.data.user, 
-        isAuthenticated: true, 
-        isCheckingAuth: false 
-      });
+      if (user) {
+        set({ 
+          user: user, 
+          isAuthenticated: true, 
+          isCheckingAuth: false 
+        });
+      } else {
+        set({ 
+          user: null, 
+          accessToken: null, 
+          isAuthenticated: false, 
+          isCheckingAuth: false 
+        });
+      }
     } catch (error) {
       // If the ping fails 
       set({ 

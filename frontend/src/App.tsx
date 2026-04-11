@@ -10,13 +10,7 @@ import { RecruiterDashboard } from './pages/Recruiter/RecruiterDashboard';
 import { useAuthStore } from './store/authStore';
 import { ManageApplicants } from './pages/Recruiter/ManageApplicants';
 import { AdminDashboard } from './pages/Admin/AdminDashboard';
-
-const Home = () => (
-  <div className="flex flex-col items-center justify-center h-[80vh]">
-    <h1 className="text-5xl font-extrabold mb-6 text-gray-900">Welcome to RoleSync</h1>
-    <p className="text-xl text-gray-600 mb-8">AI-Powered Job Matchmaking</p>
-  </div>
-);
+import { Landing } from './pages/Public/Landing';
 
 const Unauthorized = () => (
   <div className="p-8 text-center mt-20">
@@ -45,10 +39,11 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Landing />} />
+
         <Route element={<Layout />}>
           
           {/* Public Routes */}
-          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/unauthorized" element={<Unauthorized />} />

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RoleSync | Manage Applicants</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "surface": "#fcf9f8",
+                    "on-primary-fixed": "#1b1b1b",
+                    "surface-dim": "#dcd9d9",
+                    "secondary": "#bb0025",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#9079b3",
+                    "on-tertiary-fixed": "#240f43",
+                    "on-surface-variant": "#4c4546",
+                    "on-secondary-fixed-variant": "#93001a",
+                    "primary": "#000000",
+                    "surface-container": "#f0edec",
+                    "primary-container": "#1b1b1b",
+                    "surface-variant": "#e5e2e1",
+                    "on-primary-fixed-variant": "#474747",
+                    "surface-bright": "#fcf9f8",
+                    "tertiary": "#000000",
+                    "surface-container-low": "#f6f3f2",
+                    "surface-container-high": "#ebe7e7",
+                    "on-secondary-fixed": "#410006",
+                    "inverse-primary": "#c6c6c6",
+                    "inverse-surface": "#313030",
+                    "inverse-on-surface": "#f3f0ef",
+                    "tertiary-fixed": "#ecdcff",
+                    "error-container": "#ffdad6",
+                    "outline": "#7e7576",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#240f43",
+                    "on-primary-container": "#848484",
+                    "tertiary-fixed-dim": "#d4bbfa",
+                    "background": "#fcf9f8",
+                    "on-tertiary-fixed-variant": "#513d71",
+                    "on-background": "#1c1b1b",
+                    "surface-tint": "#5e5e5e",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#c6c6c6",
+                    "on-secondary-container": "#fffbff",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#1c1b1b",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#ffdad8",
+                    "secondary-container": "#e90031",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#ffb3b0",
+                    "surface-container-highest": "#e5e2e1",
+                    "outline-variant": "#cfc4c5",
+                    "primary-fixed": "#e2e2e2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased overflow-hidden">
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl flex justify-between items-center px-12 h-20 w-full">
+<div class="flex items-center gap-12">
+<span class="text-2xl font-black tracking-tighter text-black dark:text-white">CURATED</span>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-neutral-400 dark:text-neutral-500 hover:text-black dark:hover:text-white transition-colors font-inter tracking-tight uppercase font-bold text-xs" href="#">Candidates</a>
+<a class="text-neutral-400 dark:text-neutral-500 hover:text-black dark:hover:text-white transition-colors font-inter tracking-tight uppercase font-bold text-xs" href="#">Talent Pool</a>
+<a class="text-neutral-400 dark:text-neutral-500 hover:text-black dark:hover:text-white transition-colors font-inter tracking-tight uppercase font-bold text-xs" href="#">Analytics</a>
+<a class="text-neutral-400 dark:text-neutral-500 hover:text-black dark:hover:text-white transition-colors font-inter tracking-tight uppercase font-bold text-xs" href="#">Archive</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4 items-center">
+<span class="material-symbols-outlined text-neutral-500 hover:opacity-70 cursor-pointer">notifications</span>
+<span class="material-symbols-outlined text-neutral-500 hover:opacity-70 cursor-pointer">settings</span>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-bold text-xs tracking-tight uppercase transition-all scale-98 active:opacity-80">
+                Create Job
+            </button>
+<img alt="Recruiter profile avatar" class="w-10 h-10 rounded-full object-cover grayscale" data-alt="Professional headshot of a smiling recruiter in a modern office setting with soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRUPKp75P93LfCW4d1nuZ9TRc6D9mPfHg8EiSvp8A2N992R6STcm5q3Bpwg2gIw8KD3rMXhbHGhUaoYZMBBspkh1sbxprWl22Fyo1jA0F9sRQnSo107P2_U3CnKVBCUUju4CA2fD_sXBPAYH8Z8i9JUfEKMbmwXgFIo_8sc7_8UjaZp6RR9gVncJhVvjWoQwn956nqeRlBxBw5_UmynL2nM434JVs_2SkZinR6Uc6LriGXxWBYjJ1ZZEvmP8yEEG488dVwTIA4OkJH"/>
+</div>
+</nav>
+<div class="flex h-screen pt-20">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 h-full w-64 pt-8 bg-neutral-50 dark:bg-neutral-950 flex flex-col gap-y-2 px-6">
+<div class="mb-8 px-2">
+<div class="flex items-center gap-3">
+<img alt="Organization logo" class="w-8 h-8 rounded-lg bg-black object-contain p-1" data-alt="Abstract minimal geometric logo for a high-end recruitment firm, monochromatic black and white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRHJWL7tgLR_y2PfrEMHQB7RplULFqn8_siKOEawI7U4-3dWCGiDCf-5bNI7bjCrHkd11I3Vvus7Jklx5seCg-fZ5_Vg5nhs2pMvvaHZxQa9xWHtKaglb4RSpT0n-rw6JTq3UPbYJ14dBn8EB5ZvAn3LrEi1VXqYoCXYrTkykr5WWoM29unlCYbJny8Bi7VmHRs2I2mEpqdwOVLLAmK8M6rkdBH6Ve8uVo6ihJtSiZgi_rkxq8vGg2OfdqVeVm-eKd5hE7QxW-JorN"/>
+<div>
+<h2 class="font-black text-lg tracking-tighter text-black dark:text-white">Executive Search</h2>
+<p class="text-[10px] uppercase font-bold text-neutral-400 tracking-widest">Premium Tier</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-3 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors rounded-lg font-inter leading-relaxed text-sm" href="#">
+<span class="material-symbols-outlined text-lg">dashboard</span> Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-3 text-black dark:text-white font-bold bg-white dark:bg-neutral-800 rounded-lg font-inter leading-relaxed text-sm" href="#">
+<span class="material-symbols-outlined text-lg">work_outline</span> Active Roles
+                </a>
+<a class="flex items-center gap-3 px-3 py-3 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors rounded-lg font-inter leading-relaxed text-sm" href="#">
+<span class="material-symbols-outlined text-lg">filter_list</span> Pipelines
+                </a>
+<a class="flex items-center gap-3 px-3 py-3 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors rounded-lg font-inter leading-relaxed text-sm" href="#">
+<span class="material-symbols-outlined text-lg">calendar_today</span> Interviews
+                </a>
+<a class="flex items-center gap-3 px-3 py-3 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors rounded-lg font-inter leading-relaxed text-sm" href="#">
+<span class="material-symbols-outlined text-lg">tune</span> Settings
+                </a>
+</nav>
+<div class="mt-auto mb-12">
+<button class="w-full py-4 border-2 border-neutral-200 dark:border-neutral-800 text-black dark:text-white font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all">
+                    Invite Member
+                </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 w-full h-full p-12 overflow-x-auto no-scrollbar">
+<!-- Header Section -->
+<div class="mb-12 flex justify-between items-end">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="px-2 py-0.5 bg-secondary text-white text-[10px] font-black uppercase tracking-tighter rounded-sm">Hot Role</span>
+<span class="text-neutral-400 text-xs font-medium uppercase tracking-widest">Pipeline Management</span>
+</div>
+<h1 class="text-4xl font-black tracking-tight text-primary">Senior Product Designer</h1>
+<p class="text-neutral-500 mt-2 text-sm max-w-xl leading-relaxed">Managing 124 active candidates across global markets. Hiring lead: Sarah Jenkins.</p>
+</div>
+<div class="flex gap-4">
+<div class="flex -space-x-3">
+<img class="w-8 h-8 rounded-full border-2 border-white object-cover grayscale" data-alt="headshot of team member 1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCsFdCanGOv9EFhVbi8V6uTI2dU-L_Z3oMRm4Qhn2HTa5NX83zueiN5lhZpYcIBPfUzhMS5WU6dQOu_qZpHvNJCsR9maBVBQcv6ZV0I7s9yPHgTgTF56HJPNxej-vHLF63Da1f3RPulbvc5bgbkGQ3d-aBpxJ2nS-2vSyc3hfFjXHmsbXZxl_AAAhB7fBiQ2L1Ly5Z2Djj9msV4Y79tbdoyROHlmzhS8tSZJveMBMqBQs47yMhcBx9oQ4FG72Rc5vdvjdbOjfN7FhG"/>
+<img class="w-8 h-8 rounded-full border-2 border-white object-cover grayscale" data-alt="headshot of team member 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBB4njMm-mOoSE9M4vnNk50NyhiE_vGnsQv6YMx0x68a8wNMerIwpQjfyVWpzuIYRwzMU5K5fQ0gBTnpb-eFoJ_xuqf-ESHTCLloobxp8lRmMTh4NnKA1cJAOAshuf7QordkZbakC9BtmHZpf0j899I-I7Ej2sdLUoPN_t0q2v18Td_wtEhw3PoBeYeXMxi32V7aQ86S0GVEU-vtLfofEi61lI9CcM-RLo52O6QfbGzS6Rbdcj4ReEqRt_YeNlftq3tF0UsXKAwtPne"/>
+<img class="w-8 h-8 rounded-full border-2 border-white object-cover grayscale" data-alt="headshot of team member 3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJS5HjuHqZUnoqeTm2ZZbbA2gVFHwvEW7ldOcoGHkzkDnPrMYY25wk-vEUQhZF9DjVofnCUsEX3xa4dhG6baXb_jve7VGPd3r9oDfpuYQ7WcFyF_rqPfEAMh3oSQmt3pWwXrIT0jtlVPf2DsFDJaxBGyWDaWj8PWMwFU3NQ1PscjGPAUZis511vQWmMm8eu8C5LV2xXuHHnF9vLO77uxgCkQZUFNOYjQHwRj2Mc4SfvuU2w7TY9qjpGg_Z5klQAzz2wKkcsbBK3zKT"/>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-neutral-100 flex items-center justify-center text-[10px] font-bold">+5</div>
+</div>
+</div>
+</div>
+<!-- Kanban Board -->
+<div class="flex gap-6 h-[calc(100vh-280px)] min-w-[1200px]">
+<!-- Column: Applied -->
+<div class="flex-1 min-w-[300px] flex flex-col bg-neutral-100 rounded-xl p-4">
+<div class="flex justify-between items-center mb-6 px-1">
+<h3 class="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                            Applied <span class="bg-white px-2 py-0.5 rounded-full text-[10px] border border-neutral-200">42</span>
+</h3>
+<span class="material-symbols-outlined text-neutral-400 text-lg cursor-pointer hover:text-black">more_horiz</span>
+</div>
+<div class="flex flex-col gap-3 overflow-y-auto no-scrollbar pb-4">
+<!-- Card 1 -->
+<div class="bg-white border border-neutral-200 p-5 rounded-lg cursor-grab active:cursor-grabbing hover:border-black transition-colors">
+<div class="flex justify-between items-start mb-3">
+<img class="w-10 h-10 rounded-lg grayscale object-cover" data-alt="Candidate 1 professional portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA05xE9_ptl8INU-F6SERTfeSWcmWgIji6LZVEyhjYxDf3pxrJwg6wOoZeduwlC0F3eQL3abiAwChRVzB9vs25sf6Dgoc838ONWTKxo0wgGFo2evy0nxKzqb26CrbEQs6YYrqammJmnLUEWkxpEzAwMl3-ilohqIRic_dncUvUJCEPAPA9zp3Xo6PeG3p0MUPpNQSewcWTNlzkZ3zKDsXv6jJ7NsUtyZ828Fg5n2_nQnWRCqI5aIhJBCrI96-c8coipsWMqeZg58Zqk"/>
+<span class="text-[10px] font-black text-secondary">NEW</span>
+</div>
+<h4 class="font-bold text-sm text-primary mb-1">Marcus Thorne</h4>
+<p class="text-xs text-neutral-400 mb-4">Senior Designer at Meta</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-neutral-50 text-[10px] font-bold text-neutral-500 rounded-full">Senior</span>
+<span class="px-3 py-1 bg-neutral-50 text-[10px] font-bold text-neutral-500 rounded-full">Remote</span>
+<span class="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-full">98% Match</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white border border-neutral-200 p-5 rounded-lg cursor-grab hover:border-black transition-colors">
+<h4 class="font-bold text-sm text-primary mb-1">Lena Headey</h4>
+<p class="text-xs text-neutral-400 mb-4">Product Lead at Stripe</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-neutral-50 text-[10px] font-bold text-neutral-500 rounded-full">Staff</span>
+<span class="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-full">95% Match</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Reviewing -->
+<div class="flex-1 min-w-[300px] flex flex-col bg-neutral-100 rounded-xl p-4">
+<div class="flex justify-between items-center mb-6 px-1">
+<h3 class="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                            Reviewing <span class="bg-white px-2 py-0.5 rounded-full text-[10px] border border-neutral-200">18</span>
+</h3>
+<span class="material-symbols-outlined text-neutral-400 text-lg cursor-pointer hover:text-black">more_horiz</span>
+</div>
+<div class="flex flex-col gap-3 overflow-y-auto no-scrollbar pb-4">
+<div class="bg-white border border-neutral-200 p-5 rounded-lg cursor-grab hover:border-black transition-colors">
+<h4 class="font-bold text-sm text-primary mb-1">Adrian Pento</h4>
+<p class="text-xs text-neutral-400 mb-4">UX Engineer at Vercel</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-neutral-50 text-[10px] font-bold text-neutral-500 rounded-full">Frontend</span>
+<span class="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-full">92% Match</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Interviewing -->
+<div class="flex-1 min-w-[300px] flex flex-col bg-neutral-100 rounded-xl p-4">
+<div class="flex justify-between items-center mb-6 px-1">
+<h3 class="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                            Interviewing <span class="bg-white px-2 py-0.5 rounded-full text-[10px] border border-neutral-200">12</span>
+</h3>
+<span class="material-symbols-outlined text-neutral-400 text-lg cursor-pointer hover:text-black">more_horiz</span>
+</div>
+<div class="flex flex-col gap-3 overflow-y-auto no-scrollbar pb-4">
+<div class="bg-white border border-neutral-200 p-5 rounded-lg border-l-4 border-l-secondary cursor-grab hover:border-black transition-colors">
+<div class="flex justify-between items-center mb-3">
+<p class="text-[10px] font-bold text-secondary uppercase">Interview Today at 2:00 PM</p>
+</div>
+<h4 class="font-bold text-sm text-primary mb-1">Sasha Grey</h4>
+<p class="text-xs text-neutral-400 mb-4">Senior Designer at Airbnb</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-neutral-50 text-[10px] font-bold text-neutral-500 rounded-full">Design Systems</span>
+<span class="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-full">99% Match</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Offered -->
+<div class="flex-1 min-w-[300px] flex flex-col bg-neutral-100 rounded-xl p-4">
+<div class="flex justify-between items-center mb-6 px-1">
+<h3 class="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                            Offered <span class="bg-white px-2 py-0.5 rounded-full text-[10px] border border-neutral-200">2</span>
+</h3>
+<span class="material-symbols-outlined text-neutral-400 text-lg cursor-pointer hover:text-black">more_horiz</span>
+</div>
+<div class="flex flex-col gap-3 overflow-y-auto no-scrollbar pb-4">
+<div class="bg-white border border-neutral-200 p-5 rounded-lg cursor-grab hover:border-black transition-colors">
+<h4 class="font-bold text-sm text-primary mb-1">Julianne Moore</h4>
+<p class="text-xs text-neutral-400 mb-4">Principal Designer at Spotify</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-neutral-50 text-[10px] font-bold text-neutral-500 rounded-full">Principal</span>
+<span class="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-full">97% Match</span>
+</div>
+<div class="mt-4 pt-4 border-t border-neutral-50 flex items-center gap-2 text-[10px] font-bold text-neutral-400">
+<span class="material-symbols-outlined text-sm">schedule</span> Sent 2 days ago
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Floating Action for Table/List View Switch (Optional Detail) -->
+<div class="fixed bottom-12 right-12 flex gap-2">
+<button class="bg-white p-4 rounded-full shadow-2xl border border-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all">
+<span class="material-symbols-outlined">view_kanban</span>
+</button>
+<button class="bg-white/50 backdrop-blur-md p-4 rounded-full border border-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all text-neutral-400">
+<span class="material-symbols-outlined">list_alt</span>
+</button>
+</div>
+</body></html>

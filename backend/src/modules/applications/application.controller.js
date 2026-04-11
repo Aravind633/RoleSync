@@ -1,9 +1,10 @@
 import { Application } from './application.model.js';
 import { Job } from '../jobs/job.model.js';
 import { AppError } from '../../core/errors/AppError.js';
+import Notification from '../notification/notification.model.js'; 
+import { emailQueue } from '../../workers/email.worker.js';
 
-//  Apply for a job
-
+//  Apply for a job 
 export const applyForJob = async (req, res, next) => {
   try {
     const jobId = req.params.jobId;
@@ -22,7 +23,8 @@ export const applyForJob = async (req, res, next) => {
     if (existingApplication) {
       return next(new AppError('You have already applied for this job', 400));
     }
-// Create the application
+
+    // Create the application
     const application = await Application.create({
       job: jobId,
       candidate: req.user.id
@@ -53,19 +55,20 @@ export const getMyApplications = async (req, res, next) => {
     next(error);
   }
 };
-// Get all applications for a specific job (recruiter only)
+
+//  Get all applications for a specific job (Recruiter)
 export const getJobApplicants = async (req, res, next) => {
   try {
     const jobId = req.params.jobId;
-
-
     const job = await Job.findById(jobId);
+
     if (!job || job.recruiter.toString() !== req.user.id) {
       return next(new AppError('Job not found or unauthorized', 404));
     }
-// Get all applications for this job, along with candidate details
+
+    // Get all applications for this job, along with candidate details
     const applications = await Application.find({ job: jobId })
-      .populate('candidate', 'firstName lastName email skills experienceYears location resumeUrl')
+      .populate('candidate', 'firstName lastName name email skills experienceYears location resumeUrl')
       .sort('-createdAt');
 
     res.status(200).json({
@@ -77,11 +80,37 @@ export const getJobApplicants = async (req, res, next) => {
     next(error);
   }
 };
-// Update application status 
+
+// Get ALL applications for ALL jobs posted by the logged-in recruiter
+export const getRecruiterApplications = async (req, res, next) => {
+  try {
+
+    const recruiterJobs = await Job.find({ recruiter: req.user.id }).select('_id');
+    const jobIds = recruiterJobs.map(job => job._id);
+
+    const applications = await Application.find({ job: { $in: jobIds } })
+      .populate('job', 'title companyName')
+      .populate('candidate', 'firstName lastName name email skills')
+      .sort('-createdAt');
+
+    res.status(200).json({
+      status: 'success',
+      results: applications.length,
+      data: applications 
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update application status AND send notification/email (Recruiter)
 export const updateApplicationStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
-    const application = await Application.findById(req.params.id).populate('job');
+    
+    const application = await Application.findById(req.params.id)
+      .populate('job')
+      .populate('candidate', 'firstName lastName name email');
 
     if (!application) return next(new AppError('Application not found', 404));
 
@@ -90,12 +119,49 @@ export const updateApplicationStatus = async (req, res, next) => {
       return next(new AppError('Unauthorized', 403));
     }
 
+    // Update the status
     application.status = status;
     await application.save();
+    try {
+      const candidateName = application.candidate.firstName || application.candidate.name || 'Candidate';
+
+      await Notification.create({
+        user: application.candidate._id, 
+        message: `Your application for ${application.job.title} has been updated to: ${status.toUpperCase()}`,
+        type: 'application_update',
+        relatedId: application._id
+      });
+
+      if (status === 'shortlisted') {
+        await emailQueue.add('send-status-email', {
+          to: application.candidate.email,
+          subject: `Great news! You've been shortlisted for ${application.job.title}`,
+          html: `
+            <h2>Congratulations ${candidateName}!</h2>
+            <p>Your application for the <strong>${application.job.title}</strong> role has been reviewed, and the recruiter has officially shortlisted you.</p>
+            <p>Log in to your RoleSync Candidate Dashboard to see more details and await next steps.</p>
+          `
+        });
+      } else if (status === 'rejected') {
+        await emailQueue.add('send-status-email', {
+          to: application.candidate.email,
+          subject: `Update on your application for ${application.job.title}`,
+          html: `
+            <h2>Hi ${candidateName},</h2>
+            <p>Thank you for applying to the <strong>${application.job.title}</strong> role. While your background is impressive, the team has decided to move forward with other candidates at this time.</p>
+            <p>We encourage you to keep applying for other roles on RoleSync. We wish you the best in your job search!</p>
+          `
+        });
+      }
+
+    } catch (notificationError) {
+      console.error('Failed to send notification or queue email:', notificationError);
+      // We log the error but don't crash the request—the MongoDB status change is saved!
+    }
 
     res.status(200).json({
       status: 'success',
-      data: { application }
+      data: application 
     });
   } catch (error) {
     next(error);

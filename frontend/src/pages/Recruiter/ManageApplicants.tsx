@@ -6,84 +6,145 @@ export const ManageApplicants = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const { getJobApplicants, updateStatus } = useApplications();
   
-  // Fetch applicants for this specific job
   const { data: applicants, isLoading, isError } = getJobApplicants(jobId || '');
 
   const handleStatusChange = (applicationId: string, newStatus: string) => {
     updateStatus.mutate({ applicationId, status: newStatus });
   };
 
-  if (isLoading) return <div className="text-center py-10">Loading applicants...</div>;
-  if (isError) return <div className="text-center py-10 text-red-500">Error loading applicants.</div>;
+  const columns = [
+    { id: 'pending', label: 'Applied' },
+    { id: 'reviewed', label: 'Reviewing' },
+    { id: 'interviewing', label: 'Interviewing' },
+    { id: 'shortlisted', label: 'Offered' },
+    { id: 'rejected', label: 'Rejected' },
+  ];
+
+  const getApplicantsByStatus = (status: string) => {
+    return applicants?.filter((app: any) => app.status === status) || [];
+  };
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Applicant Tracking</h1>
-        <Link to="/recruiter/dashboard" className="text-blue-600 hover:underline">
-          &larr; Back to Dashboard
-        </Link>
-      </div>
+    <div className="bg-surface text-on-surface antialiased overflow-hidden min-h-screen">
+      <style>{`
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+      
 
-      {applicants?.length === 0 ? (
-        <div className="bg-white p-6 rounded-lg shadow-sm border text-center text-gray-500">
-          No candidates have applied to this job yet.
-        </div>
-      ) : (
-        <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidate</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience & Skills</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {applicants?.map((app: any) => (
-                <tr key={app._id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="font-medium text-gray-900">{app.candidate.firstName} {app.candidate.lastName}</div>
-                    <div className="text-sm text-gray-500">{app.candidate.email}</div>
-                    <div className="text-sm text-gray-500">📍 {app.candidate.location || 'N/A'}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">{app.candidate.experienceYears || 0} Years Exp.</div>
-                    <div className="text-sm text-gray-500 flex gap-1 flex-wrap mt-1">
-                      {app.candidate.skills?.slice(0, 3).map((s: string) => (
-                        <span key={s} className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">{s}</span>
+
+      <div className="flex h-screen pt-16 md:pt-20">
+        
+        {/* SideNavBar */}
+        <aside className="hidden md:flex fixed left-0 h-full w-64 pt-8 bg-neutral-50 dark:bg-neutral-950 flex-col gap-y-2 px-6 border-r border-neutral-200/50">
+          <div className="mb-8 px-2">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center p-1">
+                 <span className="material-symbols-outlined text-white text-sm">business</span>
+              </div>
+              <div>
+                <h2 className="font-black text-lg tracking-tighter text-black dark:text-white">Executive Search</h2>
+                <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest">Premium Tier</p>
+              </div>
+            </div>
+          </div>
+          <nav className="flex flex-col gap-1">
+            <Link className="flex items-center gap-3 px-3 py-3 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors rounded-lg font-inter leading-relaxed text-sm" to="/recruiter/dashboard">
+              <span className="material-symbols-outlined text-lg">dashboard</span> Command Center
+            </Link>
+            <a className="flex items-center gap-3 px-3 py-3 text-black dark:text-white font-bold bg-white dark:bg-neutral-800 rounded-lg font-inter leading-relaxed text-sm shadow-sm border border-neutral-200/50" href="#">
+              <span className="material-symbols-outlined text-lg">filter_list</span> Pipelines
+            </a>
+          </nav>
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="ml-0 md:ml-64 w-full h-full p-6 md:p-12 overflow-x-auto no-scrollbar">
+          
+          {/* Header Section */}
+          <div className="mb-8 md:mb-12 flex justify-between items-end">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2 py-0.5 bg-secondary text-white text-[10px] font-black uppercase tracking-tighter rounded-sm">Hot Role</span>
+                <span className="text-neutral-400 text-xs font-medium uppercase tracking-widest">Active Search</span>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary">
+                Reviewing Candidates
+              </h1>
+              <p className="text-neutral-500 mt-2 text-sm max-w-xl leading-relaxed">Managing {applicants?.length || 0} active candidates across global markets.</p>
+            </div>
+          </div>
+
+          {/* Kanban Board */}
+          <div className="flex gap-6 h-[calc(100vh-280px)] min-w-max pb-32">
+            
+            {isLoading ? (
+               <div className="p-10 text-neutral-500">Loading pipeline data...</div>
+            ) : isError ? (
+               <div className="p-10 text-error">Failed to load applicant pipeline.</div>
+            ) : (
+              columns.map((col) => {
+                const colApplicants = getApplicantsByStatus(col.id);
+                // hide rejected conditionally, or keep if u want. let's keep all
+                return (
+                  <div key={col.id} className="flex-none w-[280px] md:w-[320px] flex flex-col bg-neutral-100 rounded-xl p-4">
+                    <div className="flex justify-between items-center mb-6 px-1">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                        {col.label} <span className="bg-white px-2 py-0.5 rounded-full text-[10px] border border-neutral-200">{colApplicants.length}</span>
+                      </h3>
+                      <span className="material-symbols-outlined text-neutral-400 text-lg cursor-pointer hover:text-black">more_horiz</span>
+                    </div>
+
+                    <div className="flex flex-col gap-3 overflow-y-auto no-scrollbar pb-4 h-full">
+                      {colApplicants.length === 0 && (
+                        <div className="py-6 border-2 border-dashed border-neutral-300 rounded-lg text-center text-xs font-bold text-neutral-400 uppercase tracking-widest">
+                          Empty
+                        </div>
+                      )}
+                      
+                      {colApplicants.map((app: any) => (
+                        <div key={app._id} className="bg-white border border-neutral-200 p-5 rounded-lg cursor-grab hover:border-black transition-colors flex flex-col">
+                          <h4 className="font-bold text-sm text-primary mb-1">{app.candidate?.firstName} {app.candidate?.lastName}</h4>
+                          <p className="text-xs text-neutral-400 mb-4 truncate">{app.candidate?.email}</p>
+                          
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            <span className="px-3 py-1 bg-neutral-50 text-[10px] font-bold text-neutral-500 rounded-full">{app.candidate?.experienceYears || 0} Yrs</span>
+                            {app.candidate?.skills?.slice(0, 2).map((skill: string, i: number) => (
+                              <span key={i} className="px-3 py-1 bg-neutral-50 text-[10px] font-bold text-neutral-500 rounded-full truncate max-w-[80px]">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                          
+                          <div className="mt-auto pt-4 border-t border-neutral-50">
+                            <select
+                              value={app.status}
+                              onChange={(e) => handleStatusChange(app._id, e.target.value)}
+                              disabled={updateStatus.isPending}
+                              className="w-full bg-surface-container-low border-none text-[10px] font-bold tracking-widest uppercase rounded-md px-3 py-2 outline-none focus:ring-1 focus:ring-black cursor-pointer text-on-surface-variant"
+                            >
+                              <option value="pending">Move to Applied</option>
+                              <option value="reviewed">Move to Reviewing</option>
+                              <option value="interviewing">Move to Interviewing</option>
+                              <option value="shortlisted">Move to Offered</option>
+                              <option value="rejected">Move to Rejected</option>
+                            </select>
+                          </div>
+                        </div>
                       ))}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                        app.status === 'reviewed' ? 'bg-blue-100 text-blue-800' :
-                        app.status === 'shortlisted' ? 'bg-green-100 text-green-800' : 
-                        'bg-red-100 text-red-800'}`}>
-                      {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <select
-                      value={app.status}
-                      onChange={(e) => handleStatusChange(app._id, e.target.value)}
-                      disabled={updateStatus.isPending}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="reviewed">Reviewed</option>
-                      <option value="shortlisted">Shortlisted</option>
-                      <option value="rejected">Rejected</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                  </div>
+                );
+              })
+            )}
+
+          </div>
+        </main>
+      </div>
+
     </div>
   );
 };

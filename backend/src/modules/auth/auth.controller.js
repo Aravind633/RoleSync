@@ -98,11 +98,31 @@ export const logout = async (req, res) => {
 };
 export const getMe = async (req, res, next) => {
   try {
-    // The 'protect' middleware already verified the token and attached the user to req.user
+    let token;
+    
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies && req.cookies.jwt) {
+      token = req.cookies.jwt;
+    }
+
+    if (!token) {
+      return res.status(200).json({ status: 'success', data: { user: null } });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, env.JWT_SECRET);
+    } catch (err) {
+      return res.status(200).json({ status: 'success', data: { user: null } });
+    }
+
+    const currentUser = await User.findById(decoded.id);
+
     res.status(200).json({
       status: 'success',
       data: {
-        user: req.user
+        user: currentUser || null
       }
     });
   } catch (error) {

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Register | RoleSync</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed": "#1b1b1b",
+                    "on-surface": "#1c1b1b",
+                    "on-primary-container": "#848484",
+                    "surface-dim": "#dcd9d9",
+                    "surface-tint": "#5e5e5e",
+                    "surface-container-highest": "#e5e2e1",
+                    "tertiary-fixed-dim": "#d4bbfa",
+                    "tertiary-fixed": "#ecdcff",
+                    "surface-bright": "#fcf9f8",
+                    "inverse-primary": "#c6c6c6",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#e90031",
+                    "primary-container": "#1b1b1b",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#e2e2e2",
+                    "secondary": "#bb0025",
+                    "on-primary-fixed-variant": "#474747",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed-variant": "#93001a",
+                    "tertiary": "#000000",
+                    "surface-variant": "#e5e2e1",
+                    "on-surface-variant": "#4c4546",
+                    "outline": "#7e7576",
+                    "primary": "#000000",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#c6c6c6",
+                    "on-tertiary-fixed-variant": "#513d71",
+                    "tertiary-container": "#240f43",
+                    "on-secondary-fixed": "#410006",
+                    "on-secondary-container": "#fffbff",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "surface-container-high": "#ebe7e7",
+                    "on-tertiary-fixed": "#240f43",
+                    "inverse-surface": "#313030",
+                    "outline-variant": "#cfc4c5",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#ffb3b0",
+                    "secondary-fixed": "#ffdad8",
+                    "background": "#fcf9f8",
+                    "on-background": "#1c1b1b",
+                    "surface-container": "#f0edec",
+                    "surface": "#fcf9f8",
+                    "inverse-on-surface": "#f3f0ef",
+                    "on-tertiary-container": "#9079b3",
+                    "surface-container-low": "#f6f3f2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .ghost-border {
+            border: 1px solid rgba(207, 196, 197, 0.2);
+        }
+        .ghost-border:focus-within {
+            border-color: #000000;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden">
+<!-- Top Navigation (Shell suppressed for transactional focus, using minimalist brand anchor) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-12 py-8 bg-transparent pointer-events-none">
+<div class="text-2xl font-black tracking-tighter text-black pointer-events-auto">RoleSync</div>
+<div class="flex gap-8 pointer-events-auto items-center">
+<span class="text-stone-500 font-medium text-sm">Already have an account?</span>
+<a class="text-black font-bold text-sm underline underline-offset-4 hover:text-secondary transition-colors duration-300" href="#">Login</a>
+</div>
+</header>
+<main class="min-h-screen flex flex-col md:flex-row">
+<!-- Left Side: Editorial Content -->
+<section class="relative hidden md:flex md:w-1/2 lg:w-3/5 h-screen overflow-hidden bg-primary items-center justify-center p-16">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-50 grayscale" data-alt="Modern minimalist architectural interior with clean lines, soft natural lighting, and a high-end editorial aesthetic in grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl9DRighMqP4t0XJGLdrky3efR_cvZkNdVlw2QaR2o-c0bBxoQSmqKpyH_F4YN6GuoAuLVwmMzIvEjB7heESGeHEgcXN-6aOt_nQooSVGzZ9_bgJ7X6B1qQ_dTC6H4Inb18ntQGfFFkAXmlJPvfIiE__cKNe4PN3_niogRrJHjXPCRNnBAfuBHsaqakjdveFvXNgUsB8oGI-NI9Ivy0H6ucEYl9gwr9jWlzeUgADvRqs71aDq1bx1N9PTD_v9067DjcHahat7oH3TX"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+</div>
+<div class="relative z-10 w-full max-w-2xl">
+<h1 class="text-white text-6xl lg:text-8xl font-black tracking-tighter leading-[0.9] mb-8">
+                    The Curated Path <br/>to Excellence.
+                </h1>
+<p class="text-stone-400 text-lg lg:text-xl font-light leading-relaxed max-w-md">
+                    Join the elite circle of professionals and recruiters redefining the modern career landscape through precision matching.
+                </p>
+<div class="mt-16 grid grid-cols-2 gap-12">
+<div>
+<div class="text-white text-4xl font-bold tracking-tight mb-1">8M+</div>
+<div class="text-stone-500 text-xs uppercase tracking-widest font-bold">Matches Made</div>
+</div>
+<div>
+<div class="text-white text-4xl font-bold tracking-tight mb-1">94%</div>
+<div class="text-stone-500 text-xs uppercase tracking-widest font-bold">Retention Rate</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Side: Registration Form -->
+<section class="w-full md:w-1/2 lg:w-2/5 min-h-screen bg-surface-container-lowest flex items-center justify-center px-8 lg:px-24 py-20 overflow-y-auto">
+<div class="w-full max-w-md">
+<div class="mb-12">
+<h2 class="text-3xl font-black tracking-tighter text-black mb-2">Create Account</h2>
+<p class="text-on-surface-variant font-medium">Define your future with RoleSync Editorial.</p>
+</div>
+<!-- Segmented Control (Candidate vs Recruiter) -->
+<div class="bg-surface-container p-1 rounded-lg flex mb-10">
+<button class="flex-1 py-3 text-sm font-bold rounded-lg bg-surface-container-lowest text-black shadow-sm transition-all">
+                        Sign Up as Candidate
+                    </button>
+<button class="flex-1 py-3 text-sm font-medium text-on-surface-variant hover:text-black transition-all">
+                        Sign Up as Recruiter
+                    </button>
+</div>
+<form class="space-y-6">
+<!-- Full Name -->
+<div class="space-y-2">
+<label class="text-[10px] font-black uppercase tracking-widest text-stone-400 block ml-1">Full Name</label>
+<div class="ghost-border bg-surface-container-low px-4 py-4 rounded-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-stone-400 text-sm">person</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-on-surface placeholder:text-stone-400 text-sm font-medium" placeholder="Enter your full name" type="text"/>
+</div>
+</div>
+<!-- Email -->
+<div class="space-y-2">
+<label class="text-[10px] font-black uppercase tracking-widest text-stone-400 block ml-1">Work Email</label>
+<div class="ghost-border bg-surface-container-low px-4 py-4 rounded-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-stone-400 text-sm">mail</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-on-surface placeholder:text-stone-400 text-sm font-medium" placeholder="name@company.com" type="email"/>
+</div>
+</div>
+<!-- Password -->
+<div class="space-y-2">
+<label class="text-[10px] font-black uppercase tracking-widest text-stone-400 block ml-1">Password</label>
+<div class="ghost-border bg-surface-container-low px-4 py-4 rounded-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-stone-400 text-sm">lock</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-on-surface placeholder:text-stone-400 text-sm font-medium" placeholder="Min. 8 characters" type="password"/>
+<span class="material-symbols-outlined text-stone-400 text-sm cursor-pointer">visibility</span>
+</div>
+</div>
+<div class="flex items-start gap-3 py-2">
+<input class="mt-1 rounded-sm border-stone-300 text-black focus:ring-black" id="terms" type="checkbox"/>
+<label class="text-xs text-on-surface-variant leading-relaxed" for="terms">
+                            I agree to the <a class="text-black font-bold underline" href="#">Terms of Service</a> and <a class="text-black font-bold underline" href="#">Privacy Policy</a>.
+                        </label>
+</div>
+<button class="w-full bg-black text-white py-5 rounded-lg font-bold tracking-widest text-xs uppercase hover:bg-stone-800 transition-all duration-300 mt-4 active:scale-[0.98]" type="submit">
+                        CREATE ACCOUNT
+                    </button>
+</form>
+<div class="mt-12 pt-8 border-t border-surface-container-high flex flex-col items-center gap-6">
+<p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Or continue with</p>
+<div class="flex gap-4 w-full">
+<button class="flex-1 ghost-border bg-surface-container-lowest py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-surface-container transition-colors">
+<span class="text-sm font-bold">Google</span>
+</button>
+<button class="flex-1 ghost-border bg-surface-container-lowest py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-surface-container transition-colors">
+<span class="text-sm font-bold">LinkedIn</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Global Footer Minimalist (Content from JSON applied selectively) -->
+<footer class="fixed bottom-0 right-0 w-full md:w-1/2 lg:w-2/5 p-8 bg-transparent pointer-events-none">
+<div class="flex justify-center gap-6 text-[10px] font-bold text-stone-400 uppercase tracking-widest pointer-events-auto">
+<a class="hover:text-black transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-black transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-black transition-colors" href="#">Cookie Policy</a>
+</div>
+</footer>
+</body></html>

@@ -1,1 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-surface-bright: #fcf9f8;
+  --color-surface-container-low: #f6f3f2;
+  --color-surface: #fcf9f8;
+  --color-surface-container-highest: #e5e2e1;
+  --color-on-primary-fixed: #1b1b1b;
+  --color-tertiary-fixed: #ecdcff;
+  --color-background: #fcf9f8;
+  --color-error: #ba1a1a;
+  --color-on-primary-container: #848484;
+  --color-secondary: #bb0025;
+  --color-on-secondary-fixed-variant: #93001a;
+  --color-on-primary-fixed-variant: #474747;
+  --color-tertiary-fixed-dim: #d4bbfa;
+  --color-tertiary-container: #240f43;
+  --color-surface-tint: #5e5e5e;
+  --color-inverse-on-surface: #f3f0ef;
+  --color-on-tertiary-fixed-variant: #513d71;
+  --color-outline: #7e7576;
+  --color-error-container: #ffdad6;
+  --color-on-surface-variant: #4c4546;
+  --color-on-secondary-fixed: #410006;
+  --color-primary-fixed-dim: #c6c6c6;
+  --color-on-tertiary-fixed: #240f43;
+  --color-surface-container-high: #ebe7e7;
+  --color-secondary-fixed-dim: #ffb3b0;
+  --color-secondary-container: #e90031;
+  --color-on-error: #ffffff;
+  --color-on-secondary: #ffffff;
+  --color-tertiary: #000000;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container: #f0edec;
+  --color-primary-container: #1b1b1b;
+  --color-primary-fixed: #e2e2e2;
+  --color-on-error-container: #93000a;
+  --color-on-primary: #ffffff;
+  --color-on-tertiary: #ffffff;
+  --color-surface-variant: #e5e2e1;
+  --color-on-secondary-container: #fffbff;
+  --color-on-surface: #1c1b1b;
+  --color-outline-variant: #cfc4c5;
+  --color-inverse-surface: #313030;
+  --color-on-tertiary-container: #9079b3;
+  --color-secondary-fixed: #ffdad8;
+  --color-surface-dim: #dcd9d9;
+  --color-primary: #000000;
+  --color-on-background: #1c1b1b;
+  --color-inverse-primary: #c6c6c6;
+  /* Retain previous values just in case */
+  --color-brand: #ea580c; 
+  --color-charcoal: #000000;
+  
+  --font-headline: "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-zinc-50 text-charcoal font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .startup-shadow {
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+  .hero-gradient {
+      background: radial-gradient(circle at top right, var(--color-secondary-container) 0%, var(--color-surface-container-lowest) 50%);
+  }
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
