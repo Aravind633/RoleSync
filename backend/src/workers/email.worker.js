@@ -1,1 +1,34 @@
-import { Worker, Queue } from 'bullmq';\r\nimport Redis from 'ioredis'; \r\nimport { sendEmail } from '../core/utils/email.js';\r\nimport { env } from '../config/env.js';\r\n\r\nconst bullmqConnection = new Redis(env.REDIS_URL, {\r\n  maxRetriesPerRequest: null,\r\n});\r\n\r\nbullmqConnection.on('error', (err) => console.error('[BullMQ Redis] Error:', err));\r\nbullmqConnection.on('connect', () => console.log('[BullMQ] Dedicated Redis Connected'));\r\n\r\n// Create the Queue\r\nexport const emailQueue = new Queue('email-queue', { connection: bullmqConnection });\r\n\r\n// Create the Worker\r\nconst emailWorker = new Worker('email-queue', async (job) => {\r\n  const email = job.data.email || job.data.to;\r\n  const { subject, message, html } = job.data;\r\n  \r\n  console.log(`[Worker] Processing email job for ${email}...`);\r\n  \r\n  try {\r\n    await sendEmail({ email, subject, message, html });\r\n    console.log(`[Worker] Email sent successfully to ${email}`);\r\n  } catch (error) {\r\n    console.error(`[Worker] Failed to send email to ${email}:`, error);\r\n    throw error; // Tells BullMQ to retry the job\r\n  }\r\n}, { connection: bullmqConnection });\r\n\r\nemailWorker.on('failed', (job, err) => {\r\n  console.log(`Email job ${job?.id} failed with error ${err.message}`);\r\n});\r\n
+import { Worker, Queue } from 'bullmq';
+import Redis from 'ioredis';
+import { sendEmail } from '../core/utils/email.js';
+import { env } from '../config/env.js';
+
+const bullmqConnection = new Redis(env.REDIS_URL, {
+  maxRetriesPerRequest: null,
+});
+
+bullmqConnection.on('error', (err) => console.error('[BullMQ Redis] Error:', err));
+bullmqConnection.on('connect', () => console.log('[BullMQ] Dedicated Redis Connected'));
+
+// Create the Queue
+export const emailQueue = new Queue('email-queue', { connection: bullmqConnection });
+
+// Create the Worker
+const emailWorker = new Worker('email-queue', async (job) => {
+  const email = job.data.email || job.data.to;
+  const { subject, message, html } = job.data;
+
+  console.log(`[Worker] Processing email job for ${email}...`);
+
+  try {
+    await sendEmail({ email, subject, message, html });
+    console.log(`[Worker] Email sent successfully to ${email}`);
+  } catch (error) {
+    console.error(`[Worker] Failed to send email to ${email}:`, error);
+    throw error; // Tells BullMQ to retry the job
+  }
+}, { connection: bullmqConnection });
+
+emailWorker.on('failed', (job, err) => {
+  console.log(`Email job ${job?.id} failed with error ${err.message}`);
+});

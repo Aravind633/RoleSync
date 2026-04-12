@@ -1,1 +1,18 @@
-import express from 'express';\r\nimport { getMyProfile, updateMyProfile, uploadUserResume } from './profile.controller.js';\r\nimport { protect } from '../../core/middlewares/auth.middleware.js';\r\nimport { uploadResume } from '../../core/middlewares/upload.middleware.js';\r\n\r\nconst router = express.Router();\r\n\r\n// All profile routes require the user to be logged in\r\nrouter.use(protect);\r\n\r\n// General Profile Data\r\nrouter.get('/me', getMyProfile);\r\nrouter.patch('/me', updateMyProfile);\r\n\r\n// Dedicated Resume Upload Route\r\nrouter.patch('/resume', uploadResume.single('resume'), uploadUserResume);\r\n\r\nexport default router;\r\n
+import express from 'express';
+import { getMyProfile, updateMyProfile, uploadUserResume } from './profile.controller.js';
+import { protect } from '../../core/middlewares/auth.middleware.js';
+import { uploadResume } from '../../core/middlewares/upload.middleware.js';
+
+const router = express.Router();
+
+// All profile routes require the user to be logged in
+router.use(protect);
+
+// General Profile Data
+router.get('/me', getMyProfile);
+router.patch('/me', updateMyProfile);
+
+// Dedicated Resume Upload Route
+router.patch('/resume', uploadResume.single('resume'), uploadUserResume);
+
+export default router;

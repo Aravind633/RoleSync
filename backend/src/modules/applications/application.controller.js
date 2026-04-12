@@ -1,1 +1,211 @@
-import { Application } from './application.model.js';\r\nimport { Job } from '../jobs/job.model.js';\r\nimport { Profile } from '../users/profile.model.js';\r\nimport { AppError } from '../../core/errors/AppError.js';\r\nimport Notification from '../notification/notification.model.js'; \r\nimport { emailQueue } from '../../workers/email.worker.js';\r\n\r\n// Apply for a job \r\nexport const applyForJob = async (req, res, next) => {\r\n  try {\r\n    const jobId = req.params.jobId;\r\n    const job = await Job.findById(jobId);\r\n\r\n    if (!job || job.status !== 'open') {\r\n      return next(new AppError('Job is not available', 404));\r\n    }\r\n\r\n    // Check if they already applied\r\n    const existingApplication = await Application.findOne({\r\n      job: jobId,\r\n      candidate: req.user.id\r\n    });\r\n\r\n    if (existingApplication) {\r\n      return next(new AppError('You have already applied for this job', 400));\r\n    }\r\n\r\n    // Create the application\r\n    const application = await Application.create({\r\n      job: jobId,\r\n      candidate: req.user.id\r\n    });\r\n\r\n    res.status(201).json({\r\n      status: 'success',\r\n      data: { application }\r\n    });\r\n  } catch (error) {\r\n    next(error);\r\n  }\r\n};\r\n\r\n// Get all applications for the logged-in candidate\r\nexport const getMyApplications = async (req, res, next) => {\r\n  try {\r\n    const applications = await Application.find({ candidate: req.user.id })\r\n      .populate('job', 'title companyName location experienceLevel status')\r\n      .sort('-createdAt');\r\n\r\n    res.status(200).json({\r\n      status: 'success',\r\n      results: applications.length,\r\n      data: { applications }\r\n    });\r\n  } catch (error) {\r\n    next(error);\r\n  }\r\n};\r\n\r\n// Get all applications for a specific job (Recruiter)\r\nexport const getJobApplicants = async (req, res, next) => {\r\n  try {\r\n    const jobId = req.params.jobId;\r\n    const job = await Job.findById(jobId);\r\n\r\n    if (!job || job.recruiter.toString() !== req.user.id) {\r\n      return next(new AppError('Job not found or unauthorized', 404));\r\n    }\r\n\r\n    // Get all applications for this job\r\n    const applications = await Application.find({ job: jobId })\r\n      .populate('candidate', 'email role')\r\n      .sort('-createdAt');\r\n\r\n    // Enrich with profile data (firstName, skills, etc. live on Profile, not User)\r\n    const enrichedApplications = await Promise.all(\r\n      applications.map(async (app) => {\r\n        const appObj = app.toObject();\r\n        if (appObj.candidate) {\r\n          const profile = await Profile.findOne({ user: appObj.candidate._id });\r\n          if (profile) {\r\n            appObj.candidateProfile = {\r\n              firstName: profile.firstName,\r\n              lastName: profile.lastName,\r\n              skills: profile.skills,\r\n              experienceYears: profile.experienceYears,\r\n              location: profile.location,\r\n              resumeUrl: profile.resumeUrl,\r\n            };\r\n          }\r\n        }\r\n        return appObj;\r\n      })\r\n    );\r\n\r\n    res.status(200).json({\r\n      status: 'success',\r\n      results: enrichedApplications.length,\r\n      data: { applications: enrichedApplications }\r\n    });\r\n  } catch (error) {\r\n    next(error);\r\n  }\r\n};\r\n\r\n// Get ALL applications for ALL jobs posted by the logged-in recruiter\r\nexport const getRecruiterApplications = async (req, res, next) => {\r\n  try {\r\n    const recruiterJobs = await Job.find({ recruiter: req.user.id }).select('_id');\r\n    const jobIds = recruiterJobs.map(job => job._id);\r\n\r\n    const applications = await Application.find({ job: { $in: jobIds } })\r\n      .populate('job', 'title companyName')\r\n      .populate('candidate', 'email role')\r\n      .sort('-createdAt');\r\n\r\n    // Enrich with profile data\r\n    const enrichedApplications = await Promise.all(\r\n      applications.map(async (app) => {\r\n        const appObj = app.toObject();\r\n        if (appObj.candidate) {\r\n          const profile = await Profile.findOne({ user: appObj.candidate._id });\r\n          if (profile) {\r\n            appObj.candidateProfile = {\r\n              firstName: profile.firstName,\r\n              lastName: profile.lastName,\r\n              skills: profile.skills,\r\n            };\r\n          }\r\n        }\r\n        return appObj;\r\n      })\r\n    );\r\n\r\n    res.status(200).json({\r\n      status: 'success',\r\n      results: enrichedApplications.length,\r\n      data: enrichedApplications \r\n    });\r\n  } catch (error) {\r\n    next(error);\r\n  }\r\n};\r\n\r\n// Update application status AND send notification/email (Recruiter)\r\nexport const updateApplicationStatus = async (req, res, next) => {\r\n  try {\r\n    const { status } = req.body;\r\n    \r\n    const application = await Application.findById(req.params.id)\r\n      .populate('job')\r\n      .populate('candidate', 'email role');\r\n\r\n    if (!application) return next(new AppError('Application not found', 404));\r\n\r\n    // Verify ownership of the job\r\n    if (application.job.recruiter.toString() !== req.user.id) {\r\n      return next(new AppError('Unauthorized', 403));\r\n    }\r\n\r\n    // Update the status\r\n    application.status = status;\r\n    await application.save();\r\n\r\n    try {\r\n      // Fetch candidate's profile for their name\r\n      const candidateProfile = await Profile.findOne({ user: application.candidate._id });\r\n      const candidateName = candidateProfile?.firstName || 'Candidate';\r\n\r\n      await Notification.create({\r\n        user: application.candidate._id, \r\n        message: `Your application for ${application.job.title} has been updated to: ${status.toUpperCase()}`,\r\n        type: 'application_update',\r\n        relatedId: application._id\r\n      });\r\n\r\n      if (status === 'shortlisted') {\r\n        await emailQueue.add('send-status-email', {\r\n          to: application.candidate.email,\r\n          subject: `Great news! You've been shortlisted for ${application.job.title}`,\r\n          html: `\r\n            <h2>Congratulations ${candidateName}!</h2>\r\n            <p>Your application for the <strong>${application.job.title}</strong> role has been reviewed, and the recruiter has officially shortlisted you.</p>\r\n            <p>Log in to your RoleSync Candidate Dashboard to see more details and await next steps.</p>\r\n          `\r\n        });\r\n      } else if (status === 'rejected') {\r\n        await emailQueue.add('send-status-email', {\r\n          to: application.candidate.email,\r\n          subject: `Update on your application for ${application.job.title}`,\r\n          html: `\r\n            <h2>Hi ${candidateName},</h2>\r\n            <p>Thank you for applying to the <strong>${application.job.title}</strong> role. While your background is impressive, the team has decided to move forward with other candidates at this time.</p>\r\n            <p>We encourage you to keep applying for other roles on RoleSync. We wish you the best in your job search!</p>\r\n          `\r\n        });\r\n      }\r\n\r\n    } catch (notificationError) {\r\n      console.error('Failed to send notification or queue email:', notificationError);\r\n      // We log the error but don't crash the request—the MongoDB status change is saved!\r\n    }\r\n\r\n    res.status(200).json({\r\n      status: 'success',\r\n      data: application \r\n    });\r\n  } catch (error) {\r\n    next(error);\r\n  }\r\n};\r\n
+import { Application } from './application.model.js';
+import { Job } from '../jobs/job.model.js';
+import { Profile } from '../users/profile.model.js';
+import { AppError } from '../../core/errors/AppError.js';
+import Notification from '../notification/notification.model.js';
+import { emailQueue } from '../../workers/email.worker.js';
+
+// Apply for a job
+export const applyForJob = async (req, res, next) => {
+  try {
+    const jobId = req.params.jobId;
+    const job = await Job.findById(jobId);
+
+    if (!job || job.status !== 'open') {
+      return next(new AppError('Job is not available', 404));
+    }
+
+    // Check if they already applied
+    const existingApplication = await Application.findOne({
+      job: jobId,
+      candidate: req.user.id
+    });
+
+    if (existingApplication) {
+      return next(new AppError('You have already applied for this job', 400));
+    }
+
+    // Create the application
+    const application = await Application.create({
+      job: jobId,
+      candidate: req.user.id
+    });
+
+    res.status(201).json({
+      status: 'success',
+      data: { application }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get all applications for the logged-in candidate
+export const getMyApplications = async (req, res, next) => {
+  try {
+    const applications = await Application.find({ candidate: req.user.id })
+      .populate('job', 'title companyName location experienceLevel status')
+      .sort('-createdAt');
+
+    res.status(200).json({
+      status: 'success',
+      results: applications.length,
+      data: { applications }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get all applications for a specific job (Recruiter)
+export const getJobApplicants = async (req, res, next) => {
+  try {
+    const jobId = req.params.jobId;
+    const job = await Job.findById(jobId);
+
+    if (!job || job.recruiter.toString() !== req.user.id) {
+      return next(new AppError('Job not found or unauthorized', 404));
+    }
+
+    // Get all applications for this job
+    const applications = await Application.find({ job: jobId })
+      .populate('candidate', 'email role')
+      .sort('-createdAt');
+
+    // Enrich with profile data (firstName, skills, etc. live on Profile, not User)
+    const enrichedApplications = await Promise.all(
+      applications.map(async (app) => {
+        const appObj = app.toObject();
+        if (appObj.candidate) {
+          const profile = await Profile.findOne({ user: appObj.candidate._id });
+          if (profile) {
+            appObj.candidateProfile = {
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              skills: profile.skills,
+              experienceYears: profile.experienceYears,
+              location: profile.location,
+              resumeUrl: profile.resumeUrl,
+            };
+          }
+        }
+        return appObj;
+      })
+    );
+
+    res.status(200).json({
+      status: 'success',
+      results: enrichedApplications.length,
+      data: { applications: enrichedApplications }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get ALL applications for ALL jobs posted by the logged-in recruiter
+export const getRecruiterApplications = async (req, res, next) => {
+  try {
+    const recruiterJobs = await Job.find({ recruiter: req.user.id }).select('_id');
+    const jobIds = recruiterJobs.map(job => job._id);
+
+    const applications = await Application.find({ job: { $in: jobIds } })
+      .populate('job', 'title companyName')
+      .populate('candidate', 'email role')
+      .sort('-createdAt');
+
+    // Enrich with profile data
+    const enrichedApplications = await Promise.all(
+      applications.map(async (app) => {
+        const appObj = app.toObject();
+        if (appObj.candidate) {
+          const profile = await Profile.findOne({ user: appObj.candidate._id });
+          if (profile) {
+            appObj.candidateProfile = {
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              skills: profile.skills,
+            };
+          }
+        }
+        return appObj;
+      })
+    );
+
+    res.status(200).json({
+      status: 'success',
+      results: enrichedApplications.length,
+      data: enrichedApplications
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update application status AND send notification/email (Recruiter)
+export const updateApplicationStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+
+    const application = await Application.findById(req.params.id)
+      .populate('job')
+      .populate('candidate', 'email role');
+
+    if (!application) return next(new AppError('Application not found', 404));
+
+    // Verify ownership of the job
+    if (application.job.recruiter.toString() !== req.user.id) {
+      return next(new AppError('Unauthorized', 403));
+    }
+
+    // Update the status
+    application.status = status;
+    await application.save();
+
+    try {
+      // Fetch candidate's profile for their name
+      const candidateProfile = await Profile.findOne({ user: application.candidate._id });
+      const candidateName = candidateProfile?.firstName || 'Candidate';
+
+      await Notification.create({
+        user: application.candidate._id,
+        message: `Your application for ${application.job.title} has been updated to: ${status.toUpperCase()}`,
+        type: 'application_update',
+        relatedId: application._id
+      });
+
+      if (status === 'shortlisted') {
+        await emailQueue.add('send-status-email', {
+          to: application.candidate.email,
+          subject: `Great news! You've been shortlisted for ${application.job.title}`,
+          html: `
+            <h2>Congratulations ${candidateName}!</h2>
+            <p>Your application for the <strong>${application.job.title}</strong> role has been reviewed, and the recruiter has officially shortlisted you.</p>
+            <p>Log in to your RoleSync Candidate Dashboard to see more details and await next steps.</p>
+          `
+        });
+      } else if (status === 'rejected') {
+        await emailQueue.add('send-status-email', {
+          to: application.candidate.email,
+          subject: `Update on your application for ${application.job.title}`,
+          html: `
+            <h2>Hi ${candidateName},</h2>
+            <p>Thank you for applying to the <strong>${application.job.title}</strong> role. While your background is impressive, the team has decided to move forward with other candidates at this time.</p>
+            <p>We encourage you to keep applying for other roles on RoleSync. We wish you the best in your job search!</p>
+          `
+        });
+      }
+
+    } catch (notificationError) {
+      console.error('Failed to send notification or queue email:', notificationError);
+      // We log the error but don't crash the request—the MongoDB status change is saved!
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: application
+    });
+  } catch (error) {
+    next(error);
+  }
+};

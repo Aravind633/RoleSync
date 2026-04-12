@@ -1,1 +1,92 @@
-import { Queue, Worker } from 'bullmq';\r\nimport IORedis from 'ioredis';\r\nimport { Job } from '../jobs/job.model.js';\r\nimport { Profile } from '../users/profile.model.js';\r\nimport { Match } from './match.model.js';\r\nimport { calculateMatchScore } from '../../core/utils/scoring.util.js';\r\nimport { env } from '../../config/env.js';\r\n\r\n// Connect to Redis with the REQUIRED BullMQ options\r\nconst redisConnection = new IORedis(env.REDIS_URL, {\r\n  maxRetriesPerRequest: null\r\n});\r\n\r\nexport const matchQueue = new Queue('MatchQueue', { connection: redisConnection });\r\n\r\nconst matchWorker = new Worker('MatchQueue', async (jobTask) => {\r\n  const { type, payload } = jobTask.data;\r\n\r\n  if (type === 'NEW_JOB') {\r\n    const { jobId } = payload;\r\n    const newJob = await Job.findById(jobId);\r\n    if (!newJob) return;\r\n\r\n    // Query Profile model (not User) — skills, experienceYears, location live here\r\n    const candidateProfiles = await Profile.find()\r\n      .populate('user', 'role');\r\n\r\n    // Filter to only candidate profiles\r\n    const candidates = candidateProfiles.filter(p => p.user?.role === 'candidate');\r\n\r\n    for (const candidate of candidates) {\r\n      const { totalScore, details } = calculateMatchScore(candidate, newJob);\r\n\r\n      await Match.findOneAndUpdate(\r\n        { job: newJob._id, candidate: candidate.user._id },\r\n        { score: totalScore, details },\r\n        { upsert: true, new: true } \r\n      );\r\n    }\r\n\r\n    const topCandidates = await Match.find({ job: newJob._id })\r\n      .sort('-score')\r\n      .limit(10)\r\n      .populate('candidate', 'firstName lastName skills experienceYears location');\r\n      \r\n    await redisConnection.set(\r\n      `top_matches:job:${newJob._id}`, \r\n      JSON.stringify(topCandidates), \r\n      'EX', \r\n      3600 \r\n    );\r\n  }\r\n\r\n  if (type === 'NEW_CANDIDATE_PROFILE') {\r\n    const { candidateId } = payload;\r\n    // Query the Profile — this is where skills and experience live\r\n    const candidateProfile = await Profile.findOne({ user: candidateId });\r\n    if (!candidateProfile) return;\r\n\r\n    const openJobs = await Job.find({ status: 'open' });\r\n\r\n    for (const job of openJobs) {\r\n      const { totalScore, details } = calculateMatchScore(candidateProfile, job);\r\n\r\n      await Match.findOneAndUpdate(\r\n        { job: job._id, candidate: candidateId },\r\n        { score: totalScore, details },\r\n        { upsert: true, new: true }\r\n      );\r\n    }\r\n\r\n    const topJobs = await Match.find({ candidate: candidateId })\r\n      .sort('-score')\r\n      .limit(10)\r\n      .populate('job', 'title companyName location experienceLevel skills');\r\n      \r\n    await redisConnection.set(\r\n      `top_matches:candidate:${candidateId}`, \r\n      JSON.stringify(topJobs), \r\n      'EX', \r\n      3600\r\n    );\r\n  }\r\n}, { connection: redisConnection });\r\n\r\nmatchWorker.on('completed', (jobTask) => {\r\n  console.log(`[BullMQ] Match calculations and Redis caching finished for task: ${jobTask.id}`);\r\n});\r\n\r\nmatchWorker.on('failed', (jobTask, err) => {\r\n  console.error(` [BullMQ] Task ${jobTask.id} failed:`, err.message);\r\n});\r\n
+import { Queue, Worker } from 'bullmq';
+import IORedis from 'ioredis';
+import { Job } from '../jobs/job.model.js';
+import { Profile } from '../users/profile.model.js';
+import { Match } from './match.model.js';
+import { calculateMatchScore } from '../../core/utils/scoring.util.js';
+import { env } from '../../config/env.js';
+
+// Connect to Redis with the REQUIRED BullMQ options
+const redisConnection = new IORedis(env.REDIS_URL, {
+  maxRetriesPerRequest: null
+});
+
+export const matchQueue = new Queue('MatchQueue', { connection: redisConnection });
+
+const matchWorker = new Worker('MatchQueue', async (jobTask) => {
+  const { type, payload } = jobTask.data;
+
+  if (type === 'NEW_JOB') {
+    const { jobId } = payload;
+    const newJob = await Job.findById(jobId);
+    if (!newJob) return;
+
+    // Query Profile model (not User) — skills, experienceYears, location live here
+    const candidateProfiles = await Profile.find()
+      .populate('user', 'role');
+
+    // Filter to only candidate profiles
+    const candidates = candidateProfiles.filter(p => p.user?.role === 'candidate');
+
+    for (const candidate of candidates) {
+      const { totalScore, details } = calculateMatchScore(candidate, newJob);
+
+      await Match.findOneAndUpdate(
+        { job: newJob._id, candidate: candidate.user._id },
+        { score: totalScore, details },
+        { upsert: true, new: true }
+      );
+    }
+
+    const topCandidates = await Match.find({ job: newJob._id })
+      .sort('-score')
+      .limit(10)
+      .populate('candidate', 'firstName lastName skills experienceYears location');
+
+    await redisConnection.set(
+      `top_matches:job:${newJob._id}`,
+      JSON.stringify(topCandidates),
+      'EX',
+      3600
+    );
+  }
+
+  if (type === 'NEW_CANDIDATE_PROFILE') {
+    const { candidateId } = payload;
+    // Query the Profile — this is where skills and experience live
+    const candidateProfile = await Profile.findOne({ user: candidateId });
+    if (!candidateProfile) return;
+
+    const openJobs = await Job.find({ status: 'open' });
+
+    for (const job of openJobs) {
+      const { totalScore, details } = calculateMatchScore(candidateProfile, job);
+
+      await Match.findOneAndUpdate(
+        { job: job._id, candidate: candidateId },
+        { score: totalScore, details },
+        { upsert: true, new: true }
+      );
+    }
+
+    const topJobs = await Match.find({ candidate: candidateId })
+      .sort('-score')
+      .limit(10)
+      .populate('job', 'title companyName location experienceLevel skills');
+
+    await redisConnection.set(
+      `top_matches:candidate:${candidateId}`,
+      JSON.stringify(topJobs),
+      'EX',
+      3600
+    );
+  }
+}, { connection: redisConnection });
+
+matchWorker.on('completed', (jobTask) => {
+  console.log(`[BullMQ] Match calculations and Redis caching finished for task: ${jobTask.id}`);
+});
+
+matchWorker.on('failed', (jobTask, err) => {
+  console.error(` [BullMQ] Task ${jobTask.id} failed:`, err.message);
+});

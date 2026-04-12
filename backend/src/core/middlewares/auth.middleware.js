@@ -1,1 +1,41 @@
-// src/core/middlewares/auth.middleware.js\r\nimport jwt from 'jsonwebtoken';\r\nimport { User } from '../../modules/users/user.model.js';\r\nimport { AppError } from '../errors/AppError.js'; \r\nimport { env } from '../../config/env.js';\r\n\r\nexport const protect = async (req, res, next) => {\r\n  try {\r\n    let token;\r\n    \r\n    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {\r\n      token = req.headers.authorization.split(' ')[1];\r\n    } else if (req.cookies && req.cookies.jwt) {\r\n      token = req.cookies.jwt;\r\n    }\r\n\r\n    if (!token) {\r\n      return next(new AppError('You are not logged in.', 401));\r\n    }\r\n\r\n    const decoded = jwt.verify(token, env.JWT_SECRET);\r\n    const currentUser = await User.findById(decoded.id);\r\n\r\n    if (!currentUser) {\r\n      return next(new AppError('User no longer exists.', 401));\r\n    }\r\n\r\n    req.user = currentUser;\r\n    next();\r\n  } catch (error) {\r\n    next(new AppError('Invalid session. Please log in again.', 401));\r\n  }\r\n};\r\n\r\nexport const restrictTo = (...roles) => {\r\n  return (req, res, next) => {\r\n    if (!roles.includes(req.user.role)) {\r\n      return next(new AppError('You do not have permission', 403));\r\n    }\r\n    next();\r\n  };\r\n};\r\n
+import jwt from 'jsonwebtoken';
+import { User } from '../../modules/users/user.model.js';
+import { AppError } from '../errors/AppError.js';
+import { env } from '../../config/env.js';
+
+export const protect = async (req, res, next) => {
+  try {
+    let token;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies && req.cookies.jwt) {
+      token = req.cookies.jwt;
+    }
+
+    if (!token) {
+      return next(new AppError('You are not logged in.', 401));
+    }
+
+    const decoded = jwt.verify(token, env.JWT_SECRET);
+    const currentUser = await User.findById(decoded.id);
+
+    if (!currentUser) {
+      return next(new AppError('User no longer exists.', 401));
+    }
+
+    req.user = currentUser;
+    next();
+  } catch (error) {
+    next(new AppError('Invalid session. Please log in again.', 401));
+  }
+};
+
+export const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(new AppError('You do not have permission', 403));
+    }
+    next();
+  };
+};
