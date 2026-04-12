@@ -1,6 +1,20 @@
 import { Profile } from './profile.model.js';
 import { AppError } from '../../core/errors/AppError.js';
 import { matchQueue } from '../matching/match.queue.js';
+import { env } from '../../config/env.js';
+
+/**
+ * Resolves the resume URL based on the current storage strategy.
+ * - Production (S3): multer-s3 provides `req.file.location` (full S3 URL)
+ * - Development (Local): multer provides `req.file.filename`, served via /uploads/resumes/
+ */
+const getResumeUrl = (file) => {
+  if (env.NODE_ENV === 'production') {
+    return file.location; // Full S3 URL (e.g., https://bucket.s3.amazonaws.com/resumes/resume-xxx.pdf)
+  }
+  // Local dev: construct a relative URL served by express.static
+  return `/uploads/resumes/${file.filename}`;
+};
 
 export const getMyProfile = async (req, res, next) => {
   try {
@@ -36,9 +50,9 @@ export const updateMyProfile = async (req, res, next) => {
       location
     };
 
-    // If a file was uploaded via multer-s3, use the S3 URL
+    // If a file was uploaded, resolve the URL based on storage strategy
     if (req.file) {
-      updateData.resumeUrl = req.file.location; // multer-s3 provides .location (full S3 URL)
+      updateData.resumeUrl = getResumeUrl(req.file);
     }
 
     const updatedProfile = await Profile.findOneAndUpdate(
@@ -73,10 +87,10 @@ export const uploadUserResume = async (req, res, next) => {
       return next(new AppError('No file was uploaded', 400));
     }
 
-    // multer-s3 provides the full S3 URL in req.file.location
-    const resumeUrl = req.file.location;
+    // Resolve URL based on storage strategy (local or S3)
+    const resumeUrl = getResumeUrl(req.file);
 
-    // Update the profile with the S3 URL
+    // Update the profile with the resume URL
     const updatedProfile = await Profile.findOneAndUpdate(
       { user: req.user.id },
       { resumeUrl: resumeUrl },

@@ -1,24 +1,50 @@
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { s3Client, S3_BUCKET_NAME } from '../../config/s3.js';
 import { AppError } from '../errors/AppError.js';
+import { env } from '../../config/env.js';
 
-// S3 Storage — files go directly to your S3 bucket
-const storage = multerS3({
+// ─── Local Disk Storage (Development) ───────────────────────────────
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsDir = path.resolve(__dirname, '../../../uploads/resumes');
+
+// Ensure the uploads directory exists
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const localStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const filename = `resume-${uniqueSuffix}${path.extname(file.originalname)}`;
+    cb(null, filename);
+  },
+});
+
+// ─── S3 Storage (Production) ────────────────────────────────────────
+const s3Storage = multerS3({
   s3: s3Client,
   bucket: S3_BUCKET_NAME,
   metadata: (req, file, cb) => {
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
-    // Create a unique filename: resumes/resume-16345345-random.pdf
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const filename = `resumes/resume-${uniqueSuffix}${path.extname(file.originalname)}`;
     cb(null, filename);
   },
   contentType: multerS3.AUTO_CONTENT_TYPE,
 });
+
+// ─── Pick storage engine based on environment ───────────────────────
+const storage = env.NODE_ENV === 'production' ? s3Storage : localStorage;
 
 // Only allow PDFs and Word Documents
 const fileFilter = (req, file, cb) => {
