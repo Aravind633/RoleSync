@@ -16,8 +16,8 @@ export const getSystemAnalytics = async (req, res, next) => {
 
     // 3. Top 5 Most In-Demand Skills (Unwind arrays and count)
     const topSkills = await Job.aggregate([
-      { $unwind: '$skillsRequired' }, // Splits the array into individual documents
-      { $group: { _id: '$skillsRequired', demandCount: { $sum: 1 } } },
+      { $unwind: '$skills' },
+      { $group: { _id: '$skills', demandCount: { $sum: 1 } } },
       { $sort: { demandCount: -1 } }, // Sort descending
       { $limit: 5 }
     ]);

@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import pinoHttp from 'pino-http';
 import cookieParser from 'cookie-parser'; 
+import rateLimit from 'express-rate-limit';
+import { env } from './config/env.js';
 import { logger } from './core/logger/index.js';
 import { globalErrorHandler } from './core/middlewares/error.middleware.js';
 import { AppError } from './core/errors/AppError.js';
@@ -20,11 +22,23 @@ import adminRoutes from './modules/admin/admin.routes.js';
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: 'http://localhost:5173', credentials: true })); 
+app.use(cors({
+  origin: env.CORS_ORIGIN || 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json({ limit: '10kb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
-app.use('/uploads', express.static('uploads'));
+
+// Rate limiting — protect against brute-force attacks
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { status: 'fail', message: 'Too many requests, please try again later.' }
+});
+app.use('/api', apiLimiter);
 
 // Pino handles all the HTTP request logging
 app.use(pinoHttp({ logger }));

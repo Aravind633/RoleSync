@@ -1,27 +1,26 @@
 import multer from 'multer';
+import multerS3 from 'multer-s3';
 import path from 'path';
-import fs from 'fs';
+import { s3Client, S3_BUCKET_NAME } from '../../config/s3.js';
 import { AppError } from '../errors/AppError.js';
 
-// Ensure the upload directory exists
-const uploadDir = 'uploads/resumes';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-//  Set up where and how the file is saved
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir); // Save to our local folder
+// S3 Storage — files go directly to your S3 bucket
+const storage = multerS3({
+  s3: s3Client,
+  bucket: S3_BUCKET_NAME,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
   },
-  filename: (req, file, cb) => {
-    // Create a unique filename: resume-16345345-random.pdf
+  key: (req, file, cb) => {
+    // Create a unique filename: resumes/resume-16345345-random.pdf
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `resume-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
+    const filename = `resumes/resume-${uniqueSuffix}${path.extname(file.originalname)}`;
+    cb(null, filename);
+  },
+  contentType: multerS3.AUTO_CONTENT_TYPE,
 });
 
-//  Only allow PDFs and Word Documents
+// Only allow PDFs and Word Documents
 const fileFilter = (req, file, cb) => {
   const allowedMimeTypes = [
     'application/pdf',

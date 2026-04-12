@@ -189,7 +189,7 @@ export const searchJobs = async (req, res, next) => {
     };
 
     // Store this result in Redis for 5 minutes (300 seconds)
-    await redisClient.set(cacheKey, JSON.stringify(responseData), 'EX', 300);
+    await redisClient.set(cacheKey, JSON.stringify(responseData), { EX: 300 });
 
     res.status(200).json(responseData);
   } catch (error) {

@@ -22,7 +22,7 @@ const sendTokenResponse = async (user, statusCode, res) => {
   res.cookie('jwt', refreshToken, {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: env.NODE_ENV === 'production' ? 'lax' : 'strict',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 

@@ -5,7 +5,7 @@ import { useAuthStore } from '../store/authStore';
 
 // Create a configured Axios instance
 export const api = axios.create({
-  baseURL: 'http://localhost:5000/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1',
   withCredentials: true, // This tells the browser to send the HTTP-only cookie
 });
 
