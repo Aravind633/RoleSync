@@ -28,11 +28,11 @@ const app = express();
 
 app.use(helmet());
 app.use(cors({
-    origin: [
-        'http://localhost:5173', 
-        'https://main.d3b7yiqukn3q9i.amplifyapp.com'
-    ],
-    credentials: true
+  origin: [
+    'http://localhost:5173', 
+    'https://main.d3b7yiqukn3q9i.amplifyapp.com'
+  ],
+  credentials: true
 }));
 app.use(express.json({ limit: '10kb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));

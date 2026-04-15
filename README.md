@@ -1,4 +1,4 @@
-# RoleSync 🚀
+# RoleSync 
 
 > **A role-based recruitment platform that pairs technical candidates with startups through intelligent skill-matching, bulk job management, and streamlined application pipelines.**
 
@@ -12,17 +12,17 @@ RoleSync breaks the mold of traditional, noisy job boards by leveraging asynchro
 
 ---
 
-## 🌟 Platform Architecture & Features
+##  Platform Architecture & Features
 
 RoleSync is designed for scale, built on a modular, event-driven infrastructure.
 
-### 🏛 Architecture Highlights
+###  Architecture Highlights
 * **Decoupled Architecture:** Strict separation of concerns between the React Vite frontend and the Express REST API.
 * **Asynchronous Matchmaking:** Heavy processing (AI-scoring, resume parsing) is offloaded to **Redis + BullMQ**, ensuring the Node.js event loop remains unblocked.
 * **Optimized State Management:** Employs **TanStack React Query** for aggressive server-state caching and **Zustand** for lightweight client state mapping.
 * **Premium UI/UX:** Driven by a strictly typed "Curated Editorial" design system utilizing Tailwind v4 **Glassmorphism**, dynamic typography, and highly responsive layouts.
 
-### ⚙️ System Architecture Flow
+###  System Architecture Flow
 
 ```mermaid
 flowchart LR
@@ -82,14 +82,14 @@ flowchart LR
     Task  ==>|"Write Async Result"| DB
 ```
 
-### 🔥 Core Features
+###  Core Features
 * **Dual-Portal System:** Bespoke dashboards tailored individually for Candidates and Recruiters.
 * **Smart Application Pipeline:** Recruiters seamlessly handle application lifecycles (Review → Interview → Offer → Rejected).
 * **Secure Enterprise Auth:** Stateless JWT architecture served exclusively over secure, HTTP-Only cookies to eliminate XSS vulnerabilities.
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 | Domain | Technologies |
 | :--- | :--- |
@@ -104,7 +104,7 @@ flowchart LR
 
 ---
 
-## 🗂 Project Structure
+##  Project Structure
 
 The repository is modularly split into completely untethered `frontend` and `backend` services to enforce strict separation of concerns.
 
@@ -144,7 +144,7 @@ RoleSync/
 
 ---
 
-## 🚀 Quick Start (Local Development)
+##  Quick Start (Local Development)
 
 ### Quick Start Commands
 ```bash
@@ -181,7 +181,7 @@ Configure your backend `.env` file with these values:
 
 ---
 
-## 📖 API Documentation
+##  API Documentation
 
 **Base URL:**
 ```
@@ -494,7 +494,7 @@ curl -X PATCH http://localhost:5000/api/v1/profiles/me \
 
 ---
 
-## 🗄 Data Models
+##  Data Models
 
 ### User
 ```
@@ -539,7 +539,7 @@ curl -X PATCH http://localhost:5000/api/v1/profiles/me \
 
 ---
 
-## 🛡 Error Handling
+##  Error Handling
 
 All error responses follow a consistent format:
 
@@ -560,4 +560,4 @@ All error responses follow a consistent format:
 | `500` | Internal Server Error |
 
 ---
-*Architected and engineered with precision by the RoleSync Team.*
+
