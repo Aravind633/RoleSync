@@ -1,13 +1,11 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { api } from '../../config/api';
-import { useState } from 'react';
 
 export const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Hide the global top navbar on the admin dashboard because it uses a specific SideNav
   if (location.pathname.startsWith('/admin')) {

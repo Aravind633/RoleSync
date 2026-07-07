@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '../../config/api'; 
 import { useJobs } from '../../hooks/useJobs';
 import { CreateJobModal } from './CreateJobModal';
@@ -7,9 +7,7 @@ import { BulkUploadModal } from './BulkUploadModal';
 import { Link } from 'react-router-dom';
 
 export const RecruiterDashboard = () => {
-  const queryClient = useQueryClient();
   
-  const [activeTab, setActiveTab] = useState<'jobs' | 'applications'>('jobs');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
 
@@ -18,27 +16,13 @@ export const RecruiterDashboard = () => {
   const isJobsLoading = getMyJobs?.isLoading || false;
   const isJobsError = getMyJobs?.isError || false;
 
-  const { data: applications, isLoading: isAppsLoading } = useQuery({
+  const { data: applications } = useQuery({
     queryKey: ['recruiterApplications'],
     queryFn: async () => {
       const { data } = await api.get('/applications/recruiter');
       return data.data; 
     },
   });
-
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { data } = await api.patch(`/applications/${id}/status`, { status });
-      return data.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recruiterApplications'] });
-    },
-  });
-
-  const handleStatusChange = (applicationId: string, newStatus: string) => {
-    updateStatusMutation.mutate({ id: applicationId, status: newStatus });
-  };
 
   const interviewingCount = applications?.filter((a: any) => a.status === 'reviewed' || a.status === 'interviewing').length || 0;
   const offeredCount = applications?.filter((a: any) => a.status === 'shortlisted' || a.status === 'offered').length || 0;

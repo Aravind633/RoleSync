@@ -40,7 +40,7 @@ export const useApplications = () => {
       const { data } = await api.patch(`/applications/${applicationId}/status`, { status });
       return data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       // Refresh the applicants list to show the new status
       queryClient.invalidateQueries({ queryKey: ['jobApplicants'] });
     },

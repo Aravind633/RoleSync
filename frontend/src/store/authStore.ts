@@ -5,6 +5,8 @@ interface User {
   _id: string;
   email: string;
   role: 'candidate' | 'recruiter' | 'admin';
+  firstName?: string;
+  lastName?: string;
 }
 
 interface AuthState {
